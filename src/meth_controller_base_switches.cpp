@@ -5,7 +5,7 @@
 #define NORMALLY_OPEN  true
 // #define NUM_OUTPUTS  2
 
-int relayGPIOs[] = {2, 26};
+int actuatorOutputs[] = {2, 26};
 // int NUM_OUTPUTS = sizeof(relayGPIOs)/sizeof(relayGPIOs[0]);
 int NUM_OUTPUTS = 2;
 
@@ -36,7 +36,7 @@ const char index_html[] PROGMEM = R"rawliteral(
   </style>
 </head>
 <body>
-  <h2>ESP Web Server</h2>
+  <h3>Blumini Injects Monitor and Test Page</h3>
   %BUTTONPLACEHOLDER%
 <script>function toggleCheckbox(element) {
   var xhr = new XMLHttpRequest();
@@ -48,9 +48,9 @@ const char index_html[] PROGMEM = R"rawliteral(
 </html>
 )rawliteral";
 
-String relayState(int numRelay){
+String getOutputStatus(int numRelay){
   if(NORMALLY_OPEN){
-    if(digitalRead(relayGPIOs[numRelay-1])){
+    if(digitalRead(actuatorOutputs[numRelay-1])){
       return "";
     }
     else {
@@ -58,7 +58,7 @@ String relayState(int numRelay){
     }
   }
   else {
-    if(digitalRead(relayGPIOs[numRelay-1])){
+    if(digitalRead(actuatorOutputs[numRelay-1])){
       return "checked";
     }
     else {
@@ -74,10 +74,14 @@ String processor(const String& var){
   //Serial.println(var);
   if(var == "BUTTONPLACEHOLDER"){
     String buttons ="";
-    for(int i=1; i<=NUM_OUTPUTS; i++){
-      String relayStateValue = relayState(i);
-      buttons+= "<h4>Relay #" + String(i) + " - GPIO " + relayGPIOs[i-1] + "</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"" + String(i) + "\" "+ relayStateValue +"><span class=\"slider\"></span></label>";
-    }
+    // for(int i=1; i<=NUM_OUTPUTS; i++){
+    //   String relayStateValue = getOutputStatus(i);
+    //   buttons+= "<h4>Relay #" + String(i) + " - GPIO " + actuatorOutputs[i-1] + "</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"" + String(i) + "\" "+ relayStateValue +"><span class=\"slider\"></span></label>";
+    // }
+    String pumpState = getOutputStatus(0);
+    buttons = "<h4>Pump Test</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id = 0 "+ pumpState +"><span class=\"slider\"></span></label>";
+    String valveState = getOutputStatus(1);
+    buttons += "<h4>Valve Test</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id = 1 "+ valveState +"><span class=\"slider\"></span></label>";
     
 
     return buttons;
@@ -90,12 +94,12 @@ void setup(){
   Serial.begin(115200);
 
   for(int i=1; i<=NUM_OUTPUTS; i++){
-    pinMode(relayGPIOs[i-1], OUTPUT);
+    pinMode(actuatorOutputs[i-1], OUTPUT);
     if(NORMALLY_OPEN){
-      digitalWrite(relayGPIOs[i-1], HIGH);
+      digitalWrite(actuatorOutputs[i-1], HIGH);
     }
     else{
-      digitalWrite(relayGPIOs[i-1], LOW);
+      digitalWrite(actuatorOutputs[i-1], LOW);
     }
   }
   
@@ -136,11 +140,11 @@ void setup(){
       inputParam2 = PARAM_INPUT_2;
       if(NORMALLY_OPEN){
         Serial.print("NO ");
-        digitalWrite(relayGPIOs[inputMessage.toInt()-1], !inputMessage2.toInt());
+        digitalWrite(actuatorOutputs[inputMessage.toInt()-1], !inputMessage2.toInt());
       }
       else{
         Serial.print("NC ");
-        digitalWrite(relayGPIOs[inputMessage.toInt()-1], inputMessage2.toInt());
+        digitalWrite(actuatorOutputs[inputMessage.toInt()-1], inputMessage2.toInt());
       }
     }
     else {
