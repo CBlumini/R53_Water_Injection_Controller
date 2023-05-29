@@ -30,8 +30,8 @@ int actuatorOutputs[] = {2, 26};
 // int NUM_OUTPUTS = sizeof(relayGPIOs)/sizeof(relayGPIOs[0]);
 int NUM_OUTPUTS = 2;
 
-const char* PARAM_INPUT_1 = "relay";  
-const char* PARAM_INPUT_2 = "state";
+// const char* RELAY_REF = "relay";  
+// const char* STATE_REF = "state";
 
 // // Access point credentials
 // const char* ssid = "ESP32_AP";
@@ -231,15 +231,15 @@ void setup(){
   // Send a GET request to <ESP_IP>/update?relay=<inputMessage>&state=<inputMessage2>
   server.on("/update", HTTP_GET, [] (AsyncWebServerRequest *request) {
     String relayId;
-    String idParam;
+    // String idParam;
     String relayState;
-    String stateParam;
+    // String stateParam;
     // GET input1 value on <ESP_IP>/update?relay=<inputMessage>
-    if (request->hasParam(PARAM_INPUT_1) & request->hasParam(PARAM_INPUT_2)) {
-      relayId = request->getParam(PARAM_INPUT_1)->value();
-      idParam = PARAM_INPUT_1;
-      relayState = request->getParam(PARAM_INPUT_2)->value();
-      stateParam = PARAM_INPUT_2;
+    if (request->hasParam(RELAY_REF) & request->hasParam(STATE_REF)) {
+      relayId = request->getParam(RELAY_REF)->value();
+      // idParam = RELAY_REF;
+      relayState = request->getParam(STATE_REF)->value();
+      // stateParam = STATE_REF;
       if(NORMALLY_OPEN){
         Serial.print("NO ");
         digitalWrite(actuatorOutputs[relayId.toInt()-1], !relayState.toInt());
@@ -251,7 +251,7 @@ void setup(){
     }
     else {
       relayId = "No message sent";
-      idParam = "none";
+      // idParam = "none";
     }
     Serial.println(relayId + relayState);
     request->send(200, "text/plain", "OK");
