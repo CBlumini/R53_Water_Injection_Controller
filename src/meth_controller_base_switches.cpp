@@ -30,8 +30,8 @@ int actuatorOutputs[] = {2, 26};
 // int NUM_OUTPUTS = sizeof(relayGPIOs)/sizeof(relayGPIOs[0]);
 int NUM_OUTPUTS = 2;
 
-// const char* RELAY_REF = "relay";  
-// const char* STATE_REF = "state";
+const char* RELAY_REF = "relay";  
+const char* STATE_REF = "state";
 
 // // Access point credentials
 // const char* ssid = "ESP32_AP";
@@ -183,23 +183,6 @@ void setup(){
     }
   }
   
-  /////////////// SETUP WIFI
-  // Serial.println("Setting up Wi-Fi access point...");
-  // WiFi.mode(WIFI_AP);
-  // bool result = WiFi.softAP(ssid, password);
-
-  // if (result == true) {
-  //   Serial.println("Access point successfully created!");
-  // } else {
-  //   Serial.println("Failed to create access point. Check your SSID and password.");
-  // }
-
-  // delay(1000); // Give the ESP32 some time to create the network
-
-  // // Print ESP32 Local IP Address
-  // IPAddress IP = WiFi.softAPIP();
-  // Serial.print("AP IP address: ");
-  // Serial.println(IP);
 
 #ifdef USE_INTRANET
   WiFi.begin(LOCAL_SSID, LOCAL_PASS);
@@ -231,15 +214,15 @@ void setup(){
   // Send a GET request to <ESP_IP>/update?relay=<inputMessage>&state=<inputMessage2>
   server.on("/update", HTTP_GET, [] (AsyncWebServerRequest *request) {
     String relayId;
-    // String idParam;
+    String idParam;
     String relayState;
-    // String stateParam;
+    String stateParam;
     // GET input1 value on <ESP_IP>/update?relay=<inputMessage>
     if (request->hasParam(RELAY_REF) & request->hasParam(STATE_REF)) {
       relayId = request->getParam(RELAY_REF)->value();
-      // idParam = RELAY_REF;
+      idParam = RELAY_REF;
       relayState = request->getParam(STATE_REF)->value();
-      // stateParam = STATE_REF;
+      stateParam = STATE_REF;
       if(NORMALLY_OPEN){
         Serial.print("NO ");
         digitalWrite(actuatorOutputs[relayId.toInt()-1], !relayState.toInt());
