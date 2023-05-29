@@ -47,23 +47,58 @@ const char index_html[] PROGMEM = R"rawliteral(
     h2 {font-size: 3.0rem;}
     p {font-size: 3.0rem;}
     body {max-width: 600px; margin:0px auto; padding-bottom: 25px;}
-    .switch {position: relative; display: inline-block; width: 120px; height: 68px} 
-    .switch input {display: none}
-    .slider {position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 34px}
-    .slider:before {position: absolute; content: ""; height: 52px; width: 52px; left: 8px; bottom: 8px; background-color: #fff; -webkit-transition: .4s; transition: .4s; border-radius: 68px}
-    input:checked+.slider {background-color: #2196F3}
-    input:checked+.slider:before {-webkit-transform: translateX(52px); -ms-transform: translateX(52px); transform: translateX(52px)}
+    .switch {
+      position: relative; 
+      display: inline-block; 
+      width: 120px; 
+      height: 68px
+      } 
+    .switch input {
+      display: none
+      }
+    .slider {
+      position: absolute; 
+      top: 0; 
+      left: 0; 
+      right: 0; 
+      bottom: 0; b
+      ackground-color: #ccc; 
+      border-radius: 34px}
+    .slider:before {
+      position: absolute; 
+      content: ""; 
+      height: 52px; 
+      width: 52px; 
+      left: 8px; 
+      bottom: 8px; 
+      background-color: #fff; 
+      -webkit-transition: .4s; 
+      transition: .4s; 
+      border-radius: 68px
+      }
+    input:checked+.slider {
+      background-color: #2196F3
+      }
+    input:checked+.slider:before {
+      -webkit-transform: translateX(52px); 
+      -ms-transform: translateX(52px); 
+      transform: translateX(52px)}
   </style>
 </head>
 <body>
   <h3>Blumini Injects Monitor and Test Page</h3>
   %BUTTONPLACEHOLDER%
-<script>function toggleCheckbox(element) {
-  var xhr = new XMLHttpRequest();
-  if(element.checked){ xhr.open("GET", "/update?relay="+element.id+"&state=1", true); }
-  else { xhr.open("GET", "/update?relay="+element.id+"&state=0", true); }
-  xhr.send();
-}</script>
+<script>
+  function toggleCheckbox(element) {
+    var xhr = new XMLHttpRequest();
+    if(element.checked){
+      xhr.open("GET", "/update?relay=" + element.id + "&state=1", true);
+    } else {
+      xhr.open("GET", "/update?relay=" + element.id + "&state=0", true);
+    }
+    xhr.send();
+  }
+</script>
 </body>
 </html>
 )rawliteral";
@@ -195,30 +230,30 @@ void setup(){
 
   // Send a GET request to <ESP_IP>/update?relay=<inputMessage>&state=<inputMessage2>
   server.on("/update", HTTP_GET, [] (AsyncWebServerRequest *request) {
-    String inputMessage;
-    String inputParam;
-    String inputMessage2;
-    String inputParam2;
+    String relayId;
+    String idParam;
+    String relayState;
+    String stateParam;
     // GET input1 value on <ESP_IP>/update?relay=<inputMessage>
     if (request->hasParam(PARAM_INPUT_1) & request->hasParam(PARAM_INPUT_2)) {
-      inputMessage = request->getParam(PARAM_INPUT_1)->value();
-      inputParam = PARAM_INPUT_1;
-      inputMessage2 = request->getParam(PARAM_INPUT_2)->value();
-      inputParam2 = PARAM_INPUT_2;
+      relayId = request->getParam(PARAM_INPUT_1)->value();
+      idParam = PARAM_INPUT_1;
+      relayState = request->getParam(PARAM_INPUT_2)->value();
+      stateParam = PARAM_INPUT_2;
       if(NORMALLY_OPEN){
         Serial.print("NO ");
-        digitalWrite(actuatorOutputs[inputMessage.toInt()-1], !inputMessage2.toInt());
+        digitalWrite(actuatorOutputs[relayId.toInt()-1], !relayState.toInt());
       }
       else{
         Serial.print("NC ");
-        digitalWrite(actuatorOutputs[inputMessage.toInt()-1], inputMessage2.toInt());
+        digitalWrite(actuatorOutputs[relayId.toInt()-1], relayState.toInt());
       }
     }
     else {
-      inputMessage = "No message sent";
-      inputParam = "none";
+      relayId = "No message sent";
+      idParam = "none";
     }
-    Serial.println(inputMessage + inputMessage2);
+    Serial.println(relayId + relayState);
     request->send(200, "text/plain", "OK");
   });
   // Start server
