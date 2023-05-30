@@ -2,6 +2,7 @@
 #include "ESPAsyncWebServer.h"
 #include <Arduino.h>
 #include <secrets.h>
+// #include <web_page.h>
 
 // here you post web pages to your homes intranet which will make page debugging easier
 // as you just need to refresh the browser as opposed to reconnection to the web server
@@ -32,11 +33,9 @@ int NUM_OUTPUTS = 2;
 
 const char* RELAY_REF = "relay";  
 const char* STATE_REF = "state";
-
-// // Access point credentials
-// const char* ssid = "ESP32_AP";
-// const char* password = NULL;
-
+int injectionStartRPM = 0;
+int injectionEndRPM = 0;
+float scalingFactor = 0.0;
 
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML>
@@ -103,6 +102,9 @@ const char index_html[] PROGMEM = R"rawliteral(
 <body>
   <h3>Blumini Injects Monitor and Test Page</h3>
   %BUTTONPLACEHOLDER%
+  <input type="text" id="var1" placeholder="Enter value for Injection Start RPM">
+  <input type="text" id="var2" placeholder="Enter value for Injection End RPM">
+  <button onclick="updateVariables()">Update Variables</button>
   <script>
     function toggleCheckbox(element) {
       var xhr = new XMLHttpRequest();
@@ -111,6 +113,13 @@ const char index_html[] PROGMEM = R"rawliteral(
       } else {
         xhr.open("GET", "/update?relay=" + element.id + "&state=0", true);
       }
+      xhr.send();
+    }
+    function updateVariables() {
+      var var1 = document.getElementById('var1').value;
+      var var2 = document.getElementById('var2').value;
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/updateVariables?var1=" + var1 + "&var2=" + var2, true);
       xhr.send();
     }
   </script>
@@ -214,9 +223,10 @@ void setup(){
   Actual_IP = WiFi.softAPIP();
   Serial.print("IP address: "); Serial.println(Actual_IP);
 #endif
+////////////// END WIFI SETUP//////////
 
-  ////////////// END WIFI SETUP
-  
+
+///////////////SETUO ROUTES////////////
 // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/html", index_html, processor);
@@ -249,6 +259,19 @@ void setup(){
     Serial.println(relayId + relayState);
     request->send(200, "text/plain", "OK");
   });
+
+  server.on("/updateVariables", HTTP_GET, [] (AsyncWebServerRequest *request) {
+  if (request->hasParam("var1") && request->hasParam("var2")) {
+    injectionStartRPM = request->getParam("var1")->value().toInt();
+    injectionEndRPM = request->getParam("var2")->value().toInt();
+    
+    Serial.println("Injection start RPM is: " + String(injectionStartRPM));
+    Serial.println("Injection start RPM is: " + String(injectionEndRPM));
+  }
+
+  request->send(200, "text/plain", "OK");
+});
+
   // Start server
   server.begin();
 }
