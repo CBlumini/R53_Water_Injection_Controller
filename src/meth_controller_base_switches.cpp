@@ -44,16 +44,12 @@ const char index_html[] PROGMEM = R"rawliteral(
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     html {
-      font-family: Arial;
+      font-family: Arial; 
       display: inline-block;
       text-align: center;
     }
-    h2 {
-      font-size: 3.0rem;
-    }
-    p {
-      font-size: 3.0rem;
-    }
+    h2 {font-size: 2.5rem;}
+    p {font-size: 2.5rem;}
     body {
       max-width: 600px;
       margin: 0px auto;
@@ -62,8 +58,8 @@ const char index_html[] PROGMEM = R"rawliteral(
     .switch {
       position: relative;
       display: inline-block;
-      width: 120px;
-      height: 68px;
+      width: 60px;
+      height: 34px;
     } 
     .switch input {
       display: none;
@@ -75,39 +71,54 @@ const char index_html[] PROGMEM = R"rawliteral(
       right: 0;
       bottom: 0;
       background-color: #ccc;
-      border-radius: 34px;
+      border-radius: 17px;
     }
     .slider:before {
       position: absolute;
       content: "";
-      height: 52px;
-      width: 52px;
-      left: 8px;
-      bottom: 8px;
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
       background-color: #fff;
       -webkit-transition: .4s;
       transition: .4s;
-      border-radius: 68px;
+      border-radius: 34px;
     }
     input:checked + .slider {
       background-color: #2196F3;
     }
     input:checked + .slider:before {
-      -webkit-transform: translateX(52px);
-      -ms-transform: translateX(52px);
-      transform: translateX(52px);
+      -webkit-transform: translateX(26px);
+      -ms-transform: translateX(26px);
+      transform: translateX(26px);
+    }
+    .flex-container{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
     }
   </style>
 </head>
 <body>
   <h3>Blumini Injects Monitor and Test Page</h3>
-  %BUTTONPLACEHOLDER%
-  <input type="text" id="var1" placeholder="Enter value for Injection Start RPM">
-  <input type="text" id="var2" placeholder="Enter value for Injection End RPM">
-  <button onclick="updateVariables()">Update Variables</button>
+    <div class="flex-container">
+        <P>
+        %BUTTONPLACEHOLDER%
+        </P>
+        <p>
+        <input type="text" id="var1" placeholder="Enter value for Injection Start RPM">
+        <button onclick="updateStartRPM()">Update Start RPM</button>
+        </p>
+        <p>
+        <input type="text" id="var2" placeholder="Enter value for Injection End RPM">
+        <button onclick="updateEndRPM()">Update End RPM</button>
+        </p>
+    </div>
   <script>
     function toggleCheckbox(element) {
-      var xhr = new XMLHttpRequest();
+      let xhr = new XMLHttpRequest();
       if (element.checked) {
         xhr.open("GET", "/update?relay=" + element.id + "&state=1", true);
       } else {
@@ -115,11 +126,32 @@ const char index_html[] PROGMEM = R"rawliteral(
       }
       xhr.send();
     }
-    function updateVariables() {
-      var var1 = document.getElementById('var1').value;
-      var var2 = document.getElementById('var2').value;
+    function updateStartRPM() {
+      let startRPM = document.getElementById('var1').value;
+      if (!Number.isInteger(Number(startRPM))){
+        alert("Must be a whole number");
+        return;
+      }
       var xhr = new XMLHttpRequest();
-      xhr.open("GET", "/updateVariables?var1=" + var1 + "&var2=" + var2, true);
+      xhr.open("GET", "/updateStartRPM?startRPM=" + startRPM);
+      
+      xhr.onerror = function() {
+        alert("Request failed.");
+      };
+      xhr.send();
+    }
+    function updateEndRPM() {
+      let endRPM = document.getElementById('var1').value;
+      if (!Number.isInteger(Number(endRPM))){
+        alert("Must be a whole number");
+        return;
+      }
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/updateEndtRPM?endRPM=" + endRPM);
+      
+      xhr.onerror = function() {
+        alert("Request failed.");
+      };
       xhr.send();
     }
   </script>
