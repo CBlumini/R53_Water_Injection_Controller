@@ -28,15 +28,18 @@ AsyncWebServer server(80);
 
 // Outputs
 int ledPin = 2;
-int valvePin = 32;
-int pumpRelayPin = 33;
+int valvePin = 25;
+int pumpRelayPin = 26;
+int spareOutputPin = 27;
 // Inputs
 int pushToInjectPin = 34;
 int flowMeterPin = 35;
-int spareInputPin = 36;
+int injectorDutyPin = 36;
+int spareInputPin = 39;
 
-int actuatorOutputs[] = {ledPin, valvePin, pumpRelayPin};
-int NUM_OUTPUTS = 3;
+int actuatorOutputs[] = {ledPin, valvePin, pumpRelayPin, spareOutputPin};
+int sensorInput[] = {pushToInjectPin, flowMeterPin, injectorDutyPin, spareInputPin};
+// int NUM_OUTPUTS = 3;
 
 const char *RELAY_REF = "relay";
 const char *STATE_REF = "state";
@@ -115,7 +118,7 @@ const char index_html[] PROGMEM = R"rawliteral(
     <div class="flex-container">
         <div id="buttons"></div>
         <P>
-        %BUTTONPLACEHOLDER%
+        <!-- %BUTTONPLACEHOLDER% -->
         <!-- <h4>Pump Test</h4>
         <label class="switch">
             <input type="checkbox" onchange="toggleCheckbox(this)" id=0
@@ -131,30 +134,45 @@ const char index_html[] PROGMEM = R"rawliteral(
         </p>
     </div>
   <script>
-    // // Define the number of outputs
-    // var numOutputs = 3;
+    window.onload = function() {
+      let xhr = new XMLHttpRequest();
+      xhr.open("GET", "/getRelayStates", true);
+      xhr.onload = function() {
+        if (xhr.status == 200) {
+          let relayStates = JSON.parse(xhr.responseText);
+          for (let i = 0; i < numOutputs; i++) {
+           let checkbox = document.getElementById(i);
+            checkbox.checked = relayStates[i.toString()] == HIGH;
+          }
+        }
+      };
+      xhr.send();
+    }
 
-    // // Get the buttons div
-    // var buttonsDiv = document.getElementById('buttons');
+    // Define the number of outputs
+    var numOutputs = 3;
 
-    // // Create a checkbox and label for each output
-    // for (var i = 0; i < numOutputs; i++) {
-    //   // Create checkbox
-    //   var checkbox = document.createElement('input');
-    //   checkbox.type = 'checkbox';
-    //   checkbox.id = i;
-    //   checkbox.onchange = function() { toggleCheckbox(this); };
+    // Get the buttons div
+    var buttonsDiv = document.getElementById('buttons');
 
-    //   // Create label
-    //   var label = document.createElement('label');
-    //   label.htmlFor = i;
-    //   label.textContent = ' Relay #' + (i+1);
+    // Create a checkbox and label for each output
+    for (var i = 0; i < numOutputs; i++) {
+      // Create checkbox
+      var checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = i;
+      checkbox.onchange = function() { toggleCheckbox(this); };
 
-    //   // Append checkbox and label to div
-    //   buttonsDiv.appendChild(checkbox);
-    //   buttonsDiv.appendChild(label);
-    //   buttonsDiv.appendChild(document.createElement('br'));
-    // }
+      // Create label
+      var label = document.createElement('label');
+      label.htmlFor = i;
+      label.textContent = ' Relay #' + (i+1);
+
+      // Append checkbox and label to div
+      buttonsDiv.appendChild(checkbox);
+      buttonsDiv.appendChild(label);
+      buttonsDiv.appendChild(document.createElement('br'));
+    }
 
     function toggleCheckbox(element) {
       let xhr = new XMLHttpRequest();
@@ -274,42 +292,12 @@ String getOutputStatus(int numRelay)
   return "";
 }
 
-// Replaces placeholder with button section in your web page
-String processor(const String &var)
-{
-  // Serial.println(var);
-  if (var == "BUTTONPLACEHOLDER")
-  {
-    String buttons = "";
-    String pumpState = getOutputStatus(0);
-    buttons = "<h4>Pump Test</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id = 0 " + pumpState + "><span class=\"slider\"></span></label>";
-    String valveState = getOutputStatus(1);
-    buttons += "<h4>Valve Test</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id = 1 " + valveState + "><span class=\"slider\"></span></label>";
-
-    return buttons;
-  }
-  return String();
-}
 
 ///////////////// MAIN CODE ///////////////////
 void setup()
 {
-  Serial.begin(115200);
-
-  // Set up the pinst
-  for (int i = 1; i <= NUM_OUTPUTS; i++)
-  {
-    pinMode(actuatorOutputs[i - 1], OUTPUT);
-    if (NORMALLY_OPEN)
-    {
-      digitalWrite(actuatorOutputs[i - 1], HIGH);
-    }
-    else
-    {
-      digitalWrite(actuatorOutputs[i - 1], LOW);
-    }
-  }
-
+//WIFI SETUP
+#pragma region
 #ifdef USE_INTRANET
   WiFi.begin(LOCAL_SSID, LOCAL_PASS);
   while (WiFi.status() != WL_CONNECTED)
@@ -333,11 +321,23 @@ void setup()
   Serial.println(Actual_IP);
 #endif
   ////////////// END WIFI SETUP//////////
+#pragma endregion
+
+  Serial.begin(115200);
+
+  // Set up the output pins
+  pinMode(ledPin, OUTPUT);
+  ledcSetup(0, 100, 8);
+  ledcAttachPin(valvePin, 0);
+  pinMode(pumpRelayPin, OUTPUT);
+  pinMode(spareOutputPin, OUTPUT);
+
+  // Set up the input pins
 
   ///////////////SETUO ROUTES////////////
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send_P(200, "text/html", index_html, processor); });
+            { request->send_P(200, "text/html", index_html); });
 
   // Send a GET request to <ESP_IP>/update?relay=<inputMessage>&state=<inputMessage2>
   server.on("/update", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -390,7 +390,7 @@ void setup()
 
   server.on("/getRelayStates", HTTP_GET, [](AsyncWebServerRequest *request){
     DynamicJsonDocument doc(1024);
-    for (int i = 0; i < NUM_OUTPUTS; i++)
+    for (int i = 0; i < 4; i++)
     {
       doc[String(i)] = digitalRead(actuatorOutputs[i]);
     }

@@ -62,16 +62,9 @@
   </style>
 </head>
 <body>
-  <h3>Blumini Injects Monitor and Test Page</h3>
+  <h3>Blumini Injects Test and Setup Page</h3>
     <div class="flex-container">
         <div id="buttons"></div>
-        <P>
-        <!-- %BUTTONPLACEHOLDER% -->
-        <!-- <h4>Pump Test</h4>
-        <label class="switch">
-            <input type="checkbox" onchange="toggleCheckbox(this)" id=0
-        </label> -->
-        </P>
         <p>
         <input type="text" id="var1" placeholder="Enter value for Injection Start RPM">
         <button onclick="updateStartRPM()">Update Start RPM</button>
@@ -82,6 +75,14 @@
         </p>
     </div>
   <script>
+    
+
+    // Define the number of outputs
+    var numOutputs = 3;
+
+    // Get the buttons div
+    var buttonsDiv = document.getElementById('buttons');
+
     window.onload = function() {
       let xhr = new XMLHttpRequest();
       xhr.open("GET", "/getRelayStates", true);
@@ -96,12 +97,6 @@
       };
       xhr.send();
     }
-
-    // Define the number of outputs
-    var numOutputs = 3;
-
-    // Get the buttons div
-    var buttonsDiv = document.getElementById('buttons');
 
     // Create a checkbox and label for each output
     for (var i = 0; i < numOutputs; i++) {
