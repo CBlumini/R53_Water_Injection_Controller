@@ -2,6 +2,7 @@
 #include "ESPAsyncWebServer.h"
 #include <Arduino.h>
 #include <secrets.h>
+// #include <ArduinoJson.h>
 // #include <web_page.h>
 
 // here you post web pages to your homes intranet which will make page debugging easier
@@ -25,7 +26,14 @@ IPAddress actualIP;
 AsyncWebServer server(80);
 
 int actuatorOutputs[] = {2, 26};
-// int NUM_OUTPUTS = sizeof(relayGPIOs)/sizeof(relayGPIOs[0]);
+// Outputs
+int ledPin = 2;
+int valvePin = 32;
+int pumpRelayPin = 33;
+// Inputs
+int pushToInjectPin = 34;
+int flowMeterPin = 35;
+
 int NUM_OUTPUTS = 2;
 
 const char *RELAY_REF = "relay";
@@ -103,8 +111,13 @@ const char index_html[] PROGMEM = R"rawliteral(
 <body>
   <h3>Blumini Injects Monitor and Test Page</h3>
     <div class="flex-container">
+        <div id="buttons"></div>
         <P>
-        %BUTTONPLACEHOLDER%
+        <!-- %BUTTONPLACEHOLDER% -->
+        <!-- <h4>Pump Test</h4>
+        <label class="switch">
+            <input type="checkbox" onchange="toggleCheckbox(this)" id=0
+        </label> -->
         </P>
         <p>
         <input type="text" id="var1" placeholder="Enter value for Injection Start RPM">
@@ -116,6 +129,31 @@ const char index_html[] PROGMEM = R"rawliteral(
         </p>
     </div>
   <script>
+    // Define the number of outputs
+    var numOutputs = 2;
+
+    // Get the buttons div
+    var buttonsDiv = document.getElementById('buttons');
+
+    // Create a checkbox and label for each output
+    for (var i = 0; i < numOutputs; i++) {
+      // Create checkbox
+      var checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = i;
+      checkbox.onchange = function() { toggleCheckbox(this); };
+
+      // Create label
+      var label = document.createElement('label');
+      label.htmlFor = i;
+      label.textContent = ' Relay #' + (i+1);
+
+      // Append checkbox and label to div
+      buttonsDiv.appendChild(checkbox);
+      buttonsDiv.appendChild(label);
+      buttonsDiv.appendChild(document.createElement('br'));
+    }
+
     function toggleCheckbox(element) {
       let xhr = new XMLHttpRequest();
       if (element.checked) {
@@ -327,17 +365,6 @@ void setup()
     Serial.println(relayId + relayState);
     request->send(200, "text/plain", "OK"); });
 
-  server.on("/updateVariables", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-  if (request->hasParam("var1") && request->hasParam("var2")) {
-    injectionStartRPM = request->getParam("var1")->value().toInt();
-    injectionEndRPM = request->getParam("var2")->value().toInt();
-    
-    Serial.println("Injection start RPM is: " + String(injectionStartRPM));
-    Serial.println("Injection start RPM is: " + String(injectionEndRPM));
-  }
-
-  request->send(200, "text/plain", "OK"); });
 
   server.on("/updateStartRPM", HTTP_GET, [](AsyncWebServerRequest *request)
             {
@@ -357,6 +384,10 @@ void setup()
   }
 
   request->send(200, "text/plain", String(injectionEndRPM)); 
+  });
+
+  server.on("/getRelayStates", HTTP_GET, [](AsyncWebServerRequest *request){
+    // DynamicJson
   });
 
   // Start server

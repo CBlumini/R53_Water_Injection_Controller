@@ -64,8 +64,13 @@
 <body>
   <h3>Blumini Injects Monitor and Test Page</h3>
     <div class="flex-container">
+        <div id="buttons"></div>
         <P>
-        %BUTTONPLACEHOLDER%
+        <!-- %BUTTONPLACEHOLDER% -->
+        <!-- <h4>Pump Test</h4>
+        <label class="switch">
+            <input type="checkbox" onchange="toggleCheckbox(this)" id=0
+        </label> -->
         </P>
         <p>
         <input type="text" id="var1" placeholder="Enter value for Injection Start RPM">
@@ -77,6 +82,31 @@
         </p>
     </div>
   <script>
+    // Define the number of outputs
+    var numOutputs = 2;
+
+    // Get the buttons div
+    var buttonsDiv = document.getElementById('buttons');
+
+    // Create a checkbox and label for each output
+    for (var i = 0; i < numOutputs; i++) {
+      // Create checkbox
+      var checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = i;
+      checkbox.onchange = function() { toggleCheckbox(this); };
+
+      // Create label
+      var label = document.createElement('label');
+      label.htmlFor = i;
+      label.textContent = ' Relay #' + (i+1);
+
+      // Append checkbox and label to div
+      buttonsDiv.appendChild(checkbox);
+      buttonsDiv.appendChild(label);
+      buttonsDiv.appendChild(document.createElement('br'));
+    }
+
     function toggleCheckbox(element) {
       let xhr = new XMLHttpRequest();
       if (element.checked) {
