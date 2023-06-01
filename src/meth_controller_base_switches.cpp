@@ -2,7 +2,7 @@
 #include "ESPAsyncWebServer.h"
 #include <Arduino.h>
 #include <secrets.h>
-// #include <ArduinoJson.h>
+#include <ArduinoJson.h>
 // #include <web_page.h>
 
 // here you post web pages to your homes intranet which will make page debugging easier
@@ -25,7 +25,7 @@ IPAddress actualIP;
 
 AsyncWebServer server(80);
 
-int actuatorOutputs[] = {2, 26};
+
 // Outputs
 int ledPin = 2;
 int valvePin = 32;
@@ -33,8 +33,10 @@ int pumpRelayPin = 33;
 // Inputs
 int pushToInjectPin = 34;
 int flowMeterPin = 35;
+int spareInputPin = 36;
 
-int NUM_OUTPUTS = 2;
+int actuatorOutputs[] = {ledPin, valvePin, pumpRelayPin};
+int NUM_OUTPUTS = 3;
 
 const char *RELAY_REF = "relay";
 const char *STATE_REF = "state";
@@ -113,7 +115,7 @@ const char index_html[] PROGMEM = R"rawliteral(
     <div class="flex-container">
         <div id="buttons"></div>
         <P>
-        <!-- %BUTTONPLACEHOLDER% -->
+        %BUTTONPLACEHOLDER%
         <!-- <h4>Pump Test</h4>
         <label class="switch">
             <input type="checkbox" onchange="toggleCheckbox(this)" id=0
@@ -129,30 +131,30 @@ const char index_html[] PROGMEM = R"rawliteral(
         </p>
     </div>
   <script>
-    // Define the number of outputs
-    var numOutputs = 2;
+    // // Define the number of outputs
+    // var numOutputs = 3;
 
-    // Get the buttons div
-    var buttonsDiv = document.getElementById('buttons');
+    // // Get the buttons div
+    // var buttonsDiv = document.getElementById('buttons');
 
-    // Create a checkbox and label for each output
-    for (var i = 0; i < numOutputs; i++) {
-      // Create checkbox
-      var checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.id = i;
-      checkbox.onchange = function() { toggleCheckbox(this); };
+    // // Create a checkbox and label for each output
+    // for (var i = 0; i < numOutputs; i++) {
+    //   // Create checkbox
+    //   var checkbox = document.createElement('input');
+    //   checkbox.type = 'checkbox';
+    //   checkbox.id = i;
+    //   checkbox.onchange = function() { toggleCheckbox(this); };
 
-      // Create label
-      var label = document.createElement('label');
-      label.htmlFor = i;
-      label.textContent = ' Relay #' + (i+1);
+    //   // Create label
+    //   var label = document.createElement('label');
+    //   label.htmlFor = i;
+    //   label.textContent = ' Relay #' + (i+1);
 
-      // Append checkbox and label to div
-      buttonsDiv.appendChild(checkbox);
-      buttonsDiv.appendChild(label);
-      buttonsDiv.appendChild(document.createElement('br'));
-    }
+    //   // Append checkbox and label to div
+    //   buttonsDiv.appendChild(checkbox);
+    //   buttonsDiv.appendChild(label);
+    //   buttonsDiv.appendChild(document.createElement('br'));
+    // }
 
     function toggleCheckbox(element) {
       let xhr = new XMLHttpRequest();
@@ -387,7 +389,14 @@ void setup()
   });
 
   server.on("/getRelayStates", HTTP_GET, [](AsyncWebServerRequest *request){
-    // DynamicJson
+    DynamicJsonDocument doc(1024);
+    for (int i = 0; i < NUM_OUTPUTS; i++)
+    {
+      doc[String(i)] = digitalRead(actuatorOutputs[i]);
+    }
+    String response;
+    serializeJson(doc, response);
+    request->send(200, "application/json", response);
   });
 
   // Start server

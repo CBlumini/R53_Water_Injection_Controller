@@ -82,8 +82,23 @@
         </p>
     </div>
   <script>
+    window.onload = function() {
+      let xhr = new XMLHttpRequest();
+      xhr.open("GET", "/getRelayStates", true);
+      xhr.onload = function() {
+        if (xhr.status == 200) {
+          let relayStates = JSON.parse(xhr.responseText);
+          for (let i = 0; i < numOutputs; i++) {
+           let checkbox = document.getElementById(i);
+            checkbox.checked = relayStates[i.toString()] == HIGH;
+          }
+        }
+      };
+      xhr.send();
+    }
+
     // Define the number of outputs
-    var numOutputs = 2;
+    var numOutputs = 3;
 
     // Get the buttons div
     var buttonsDiv = document.getElementById('buttons');
