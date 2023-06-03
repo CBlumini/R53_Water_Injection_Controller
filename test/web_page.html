@@ -1,32 +1,44 @@
 <!DOCTYPE HTML>
 <html>
+
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     html {
-      font-family: Arial; 
+      font-family: Arial;
       display: inline-block;
       text-align: center;
     }
-    h2 {font-size: 2.5rem;}
-    p {font-size: 2.5rem;}
+
+    h2 {
+      font-size: 2.5rem;
+    }
+
+    p {
+      font-size: 2.5rem;
+    }
+
     body {
       max-width: 600px;
       margin: 0px auto;
       padding-bottom: 25px;
     }
-    label{
+
+    label {
       font-size: small;
     }
+
     .switch {
       position: relative;
       display: inline-block;
       width: 60px;
       height: 34px;
-    } 
+    }
+
     .switch input {
       display: none;
     }
+
     .slider {
       position: absolute;
       top: 0;
@@ -36,6 +48,7 @@
       background-color: #ccc;
       border-radius: 17px;
     }
+
     .slider:before {
       position: absolute;
       content: "";
@@ -48,59 +61,73 @@
       transition: .4s;
       border-radius: 34px;
     }
-    input:checked + .slider {
+
+    input:checked+.slider {
       background-color: #2196F3;
     }
-    input:checked + .slider:before {
+
+    input:checked+.slider:before {
       -webkit-transform: translateX(26px);
       -ms-transform: translateX(26px);
       transform: translateX(26px);
     }
-    .flex-container{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+
+    .flex-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
   </style>
 </head>
+
 <body>
   <h3>Blumini Injects Test and Setup Page</h3>
-    <div class="flex-container">
-        <p>
-        <input type="checkbox" id="0" onchange="()=>toggleCheckbox(this)">
-        <label for="0">LED</label>
-        <br>
-        <input type="checkbox" id="1" onchange="()=>toggleCheckbox(this)">
-        <label for="1">Injection Valve</label>
-        <br>
-        <input type="checkbox" id="2" onchange="()=>toggleCheckbox(this)">
-        <label for="2">Pump</label>
-        <br>
-        <input type="checkbox" id="3" onchange="()=>toggleCheckbox(this)">
-        <label for="3">Spare</label>
-        </p>
-        <p>
-        <input type="text" id="var1" placeholder="Enter value for Injection Start RPM">
-        <button onclick="updateStartRPM()">Update Start RPM</button>
-        <br>
-        <input type="text" id="var2" placeholder="Enter value for Injection End RPM">
-        <button onclick="updateEndRPM()">Update End RPM</button>
-        </p>
-    </div>
+  <div class="flex-container">
+    <h4>LED Test</h4>
+    <label class="switch" for="0">
+      <input type="checkbox" id="0" onchange="()=>toggleCheckbox(this)">
+      <span class="slider">
+      </span>
+    </label>
+    <h4>Injector Test</h4>
+    <label class="switch" for="1">
+      <input type="checkbox" id="1" onchange="()=>toggleCheckbox(this)">
+      <span class="slider">
+      </span>
+    </label>
+    <h4>Pump Test</h4>
+    <label class="switch" for="2">
+      <input type="checkbox" id="2" onchange="()=>toggleCheckbox(this)">
+      <span class="slider">
+      </span>
+    </label>
+    <h4>Spare Output Test</h4>
+    <label class="switch" for="3">
+      <input type="checkbox" id="3" onchange="()=>toggleCheckbox(this)">
+      <span class="slider">
+      </span>
+    </label>
+    <br>
+    <input type="text" id="var1" placeholder="Enter value for Injection Start RPM">
+    <button onclick="updateStartRPM()">Update Start RPM</button>
+    <br>
+    <input type="text" id="var2" placeholder="Enter value for Injection End RPM">
+    <button onclick="updateEndRPM()">Update End RPM</button>
+  </div>
   <script>
 
     // Define the number of outputs
     var numOutputs = 4;
 
-    window.onload = function() {
+    window.onload = function () {
       let xhr = new XMLHttpRequest();
       xhr.open("GET", "/getRelayStates", true);
-      xhr.onload = function() {
+      xhr.onload = function () {
         if (xhr.status == 200) {
           let relayStates = JSON.parse(xhr.responseText);
           for (let i = 0; i < numOutputs; i++) {
-           let checkbox = document.getElementById(i);
+            let checkbox = document.getElementById(i);
             checkbox.checked = relayStates[i.toString()] === "HIGH";
           }
         }
@@ -120,7 +147,7 @@
     function updateStartRPM() {
       let startRPM = document.getElementById('var1').value;
       // Validation
-      if (!Number.isInteger(Number(startRPM))){
+      if (!Number.isInteger(Number(startRPM))) {
         alert("Must be a whole number");
         return;
       }
@@ -130,12 +157,12 @@
       // let the user know it worked
       xhr.onload = () => {
         if (xhr.status == 200) {
-            alert("Updated Start RPM to", xhr.responseText)
+          alert("Updated Start RPM to", xhr.responseText)
         } else {
-            alert("Failed to update Start RPM, Error: ", xhr.status)
+          alert("Failed to update Start RPM, Error: ", xhr.status)
         }
       };
-      
+
       // Error if the request deosnt go through
       xhr.onerror = () => {
         alert("Request failed.");
@@ -145,7 +172,7 @@
     function updateEndRPM() {
       let endRPM = document.getElementById('var2').value;
       // Validation
-      if (!Number.isInteger(Number(endRPM))){
+      if (!Number.isInteger(Number(endRPM))) {
         alert("Must be a whole number");
         return;
       }
@@ -155,12 +182,12 @@
       // let the user know it went througg
       xhr.onload = () => {
         if (xhr.status == 200) {
-            alert("Updated End RPM")
+          alert("Updated End RPM")
         } else {
-            alert("Failed to update End RPM, Error: ", xhr.status)
+          alert("Failed to update End RPM, Error: ", xhr.status)
         }
       };
-      
+
       // Error if the request doesnt go through
       xhr.onerror = () => {
         alert("Request failed.");
@@ -169,4 +196,11 @@
     }
   </script>
 </body>
+
 </html>
+
+<!-- String buttons = "";
+String pumpState = getOutputStatus(0);
+buttons = "<h4>Pump Test</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id = 0 " + pumpState + "><span class=\"slider\"></span></label>";
+String valveState = getOutputStatus(1);
+buttons += "<h4>Valve Test</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id = 1 " + valveState + "><span class=\"slider\"></span></label>"; -->
