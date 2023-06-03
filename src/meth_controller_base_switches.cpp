@@ -40,8 +40,8 @@ int actuatorOutputs[] = {ledPin, valvePin, pumpRelayPin, spareOutputPin};
 int sensorInput[] = {pushToInjectPin, flowMeterPin, injectorDutyPin, spareInputPin};
 // int NUM_OUTPUTS = 3;
 
-const char *RELAY_REF = "relay";
-const char *STATE_REF = "state";
+// const char *RELAY_REF = "relay";
+// const char *STATE_REF = "state";
 int injectionStartRPM = 0;
 int injectionEndRPM = 0;
 float scalingFactor = 0.0;
@@ -316,9 +316,9 @@ void setup()
             {
     String relayId;
     String relayState;
-    if (request->hasParam(RELAY_REF) & request->hasParam(STATE_REF)) {
-      relayId = request->getParam(RELAY_REF)->value();
-      relayState = request->getParam(STATE_REF)->value();
+    if (request->hasParam("relay") & request->hasParam("state")) {
+      relayId = request->getParam("relay")->value();
+      relayState = request->getParam("state")->value();
       Serial.print("NO ");
       digitalWrite(actuatorOutputs[relayId.toInt()-1], !relayState.toInt());
     }

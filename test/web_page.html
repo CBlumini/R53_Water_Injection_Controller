@@ -15,6 +15,9 @@
       margin: 0px auto;
       padding-bottom: 25px;
     }
+    label{
+      font-size: small;
+    }
     .switch {
       position: relative;
       display: inline-block;
@@ -64,24 +67,31 @@
 <body>
   <h3>Blumini Injects Test and Setup Page</h3>
     <div class="flex-container">
-        <div id="buttons"></div>
+        <p>
+        <input type="checkbox" id="0" onchange="()=>toggleCheckbox(this)">
+        <label for="0">LED</label>
+        <br>
+        <input type="checkbox" id="1" onchange="()=>toggleCheckbox(this)">
+        <label for="1">Injection Valve</label>
+        <br>
+        <input type="checkbox" id="2" onchange="()=>toggleCheckbox(this)">
+        <label for="2">Pump</label>
+        <br>
+        <input type="checkbox" id="3" onchange="()=>toggleCheckbox(this)">
+        <label for="3">Spare</label>
+        </p>
         <p>
         <input type="text" id="var1" placeholder="Enter value for Injection Start RPM">
         <button onclick="updateStartRPM()">Update Start RPM</button>
-        </p>
-        <p>
+        <br>
         <input type="text" id="var2" placeholder="Enter value for Injection End RPM">
         <button onclick="updateEndRPM()">Update End RPM</button>
         </p>
     </div>
   <script>
-    
 
     // Define the number of outputs
-    var numOutputs = 3;
-
-    // Get the buttons div
-    var buttonsDiv = document.getElementById('buttons');
+    var numOutputs = 4;
 
     window.onload = function() {
       let xhr = new XMLHttpRequest();
@@ -91,30 +101,11 @@
           let relayStates = JSON.parse(xhr.responseText);
           for (let i = 0; i < numOutputs; i++) {
            let checkbox = document.getElementById(i);
-            checkbox.checked = relayStates[i.toString()] == HIGH;
+            checkbox.checked = relayStates[i.toString()] === "HIGH";
           }
         }
       };
       xhr.send();
-    }
-
-    // Create a checkbox and label for each output
-    for (let i = 0; i < numOutputs; i++) {
-      // Create checkbox
-      let checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.id = i;
-      checkbox.onchange = function() { toggleCheckbox(this); };
-
-      // Create label
-      let label = document.createElement('label');
-      label.htmlFor = i;
-      label.textContent = ' Relay #' + (i+1);
-
-      // Append checkbox and label to div
-      buttonsDiv.appendChild(checkbox);
-      buttonsDiv.appendChild(label);
-      buttonsDiv.appendChild(document.createElement('br'));
     }
 
     function toggleCheckbox(element) {
