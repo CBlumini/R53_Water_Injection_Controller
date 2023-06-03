@@ -99,15 +99,15 @@
     }
 
     // Create a checkbox and label for each output
-    for (var i = 0; i < numOutputs; i++) {
+    for (let i = 0; i < numOutputs; i++) {
       // Create checkbox
-      var checkbox = document.createElement('input');
+      let checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       checkbox.id = i;
       checkbox.onchange = function() { toggleCheckbox(this); };
 
       // Create label
-      var label = document.createElement('label');
+      let label = document.createElement('label');
       label.htmlFor = i;
       label.textContent = ' Relay #' + (i+1);
 

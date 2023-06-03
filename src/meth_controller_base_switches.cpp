@@ -25,7 +25,6 @@ IPAddress actualIP;
 
 AsyncWebServer server(80);
 
-
 // Outputs
 int ledPin = 2;
 int valvePin = 25;
@@ -265,38 +264,9 @@ void printWifiStatus()
 
 // end of code
 
-String getOutputStatus(int numRelay)
-{
-  if (NORMALLY_OPEN)
-  {
-    if (digitalRead(actuatorOutputs[numRelay - 1]))
-    {
-      return "";
-    }
-    else
-    {
-      return "checked";
-    }
-  }
-  else
-  {
-    if (digitalRead(actuatorOutputs[numRelay - 1]))
-    {
-      return "checked";
-    }
-    else
-    {
-      return "";
-    }
-  }
-  return "";
-}
-
-
-///////////////// MAIN CODE ///////////////////
 void setup()
 {
-//WIFI SETUP
+// WIFI SETUP
 #pragma region
 #ifdef USE_INTRANET
   WiFi.begin(LOCAL_SSID, LOCAL_PASS);
@@ -323,6 +293,8 @@ void setup()
   ////////////// END WIFI SETUP//////////
 #pragma endregion
 
+  ///////////////// MAIN CODE ///////////////////
+
   Serial.begin(115200);
 
   // Set up the output pins
@@ -334,7 +306,7 @@ void setup()
 
   // Set up the input pins
 
-  ///////////////SETUO ROUTES////////////
+  ///////////////SETUP ROUTES////////////
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send_P(200, "text/html", index_html); });
@@ -343,23 +315,12 @@ void setup()
   server.on("/update", HTTP_GET, [](AsyncWebServerRequest *request)
             {
     String relayId;
-    String idParam;
     String relayState;
-    String stateParam;
-    // GET input1 value on <ESP_IP>/update?relay=<inputMessage>
     if (request->hasParam(RELAY_REF) & request->hasParam(STATE_REF)) {
       relayId = request->getParam(RELAY_REF)->value();
-      idParam = RELAY_REF;
       relayState = request->getParam(STATE_REF)->value();
-      stateParam = STATE_REF;
-      if(NORMALLY_OPEN){
-        Serial.print("NO ");
-        digitalWrite(actuatorOutputs[relayId.toInt()-1], !relayState.toInt());
-      }
-      else{
-        Serial.print("NC ");
-        digitalWrite(actuatorOutputs[relayId.toInt()-1], relayState.toInt());
-      }
+      Serial.print("NO ");
+      digitalWrite(actuatorOutputs[relayId.toInt()-1], !relayState.toInt());
     }
     else {
       relayId = "No message sent";
@@ -367,16 +328,13 @@ void setup()
     Serial.println(relayId + relayState);
     request->send(200, "text/plain", "OK"); });
 
-
   server.on("/updateStartRPM", HTTP_GET, [](AsyncWebServerRequest *request)
             {
   if (request->hasParam("startRPM")) {
     injectionStartRPM = request->getParam("startRPM")->value().toInt();
     Serial.println("Injection Start RPM is: " + String(injectionStartRPM));
   }
-
-  request->send(200, "text/plain", String(injectionStartRPM)); 
-  });
+  request->send(200, "text/plain", String(injectionStartRPM)); });
 
   server.on("/updateEndRPM", HTTP_GET, [](AsyncWebServerRequest *request)
             {
@@ -384,11 +342,10 @@ void setup()
     injectionEndRPM = request->getParam("endRPM")->value().toInt();
     Serial.println("Injection End RPM is: " + String(injectionEndRPM));
   }
+  request->send(200, "text/plain", String(injectionEndRPM)); });
 
-  request->send(200, "text/plain", String(injectionEndRPM)); 
-  });
-
-  server.on("/getRelayStates", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/getRelayStates", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
     DynamicJsonDocument doc(1024);
     for (int i = 0; i < 4; i++)
     {
@@ -396,8 +353,7 @@ void setup()
     }
     String response;
     serializeJson(doc, response);
-    request->send(200, "application/json", response);
-  });
+    request->send(200, "application/json", response); });
 
   // Start server
   server.begin();
