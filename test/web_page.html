@@ -86,25 +86,25 @@
   <div class="flex-container">
     <h4>LED Test</h4>
     <label class="switch" for="0">
-      <input type="checkbox" id="0" onchange="()=>toggleCheckbox(this)">
+      <input type="checkbox" id="0" onchange="toggleCheckbox(this)">
       <span class="slider">
       </span>
     </label>
     <h4>Injector Test</h4>
     <label class="switch" for="1">
-      <input type="checkbox" id="1" onchange="()=>toggleCheckbox(this)">
+      <input type="checkbox" id="1" onchange="toggleCheckbox(this)">
       <span class="slider">
       </span>
     </label>
     <h4>Pump Test</h4>
     <label class="switch" for="2">
-      <input type="checkbox" id="2" onchange="()=>toggleCheckbox(this)">
+      <input type="checkbox" id="2" onchange="toggleCheckbox(this)">
       <span class="slider">
       </span>
     </label>
     <h4>Spare Output Test</h4>
     <label class="switch" for="3">
-      <input type="checkbox" id="3" onchange="()=>toggleCheckbox(this)">
+      <input type="checkbox" id="3" onchange="toggleCheckbox(this)">
       <span class="slider">
       </span>
     </label>
@@ -136,6 +136,7 @@
     }
 
     function toggleCheckbox(element) {
+      console.log("checkbox toggled")
       let xhr = new XMLHttpRequest();
       if (element.checked) {
         xhr.open("GET", "/update?relay=" + element.id + "&state=1", true);

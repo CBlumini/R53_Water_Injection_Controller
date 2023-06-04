@@ -7,7 +7,9 @@
 
 // here you post web pages to your homes intranet which will make page debugging easier
 // as you just need to refresh the browser as opposed to reconnection to the web server
-#define USE_INTRANET
+// #define USE_INTRANET
+// #define USE_AP
+#define SIMULATOR
 
 // once  you are read to go live these settings are what you client will connect to
 #define AP_SSID "Water Inject"
@@ -51,30 +53,45 @@ float scalingFactor = 0.0;
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML>
 <html>
+
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     html {
-      font-family: Arial; 
+      font-family: Arial;
       display: inline-block;
       text-align: center;
     }
-    h2 {font-size: 2.5rem;}
-    p {font-size: 2.5rem;}
+
+    h2 {
+      font-size: 2.5rem;
+    }
+
+    p {
+      font-size: 2.5rem;
+    }
+
     body {
       max-width: 600px;
       margin: 0px auto;
       padding-bottom: 25px;
     }
+
+    label {
+      font-size: small;
+    }
+
     .switch {
       position: relative;
       display: inline-block;
       width: 60px;
       height: 34px;
-    } 
+    }
+
     .switch input {
       display: none;
     }
+
     .slider {
       position: absolute;
       top: 0;
@@ -84,6 +101,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       background-color: #ccc;
       border-radius: 17px;
     }
+
     .slider:before {
       position: absolute;
       content: "";
@@ -96,81 +114,78 @@ const char index_html[] PROGMEM = R"rawliteral(
       transition: .4s;
       border-radius: 34px;
     }
-    input:checked + .slider {
+
+    input:checked+.slider {
       background-color: #2196F3;
     }
-    input:checked + .slider:before {
+
+    input:checked+.slider:before {
       -webkit-transform: translateX(26px);
       -ms-transform: translateX(26px);
       transform: translateX(26px);
     }
-    .flex-container{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+
+    .flex-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
   </style>
 </head>
+
 <body>
-  <h3>Blumini Injects Monitor and Test Page</h3>
-    <div class="flex-container">
-        <div id="buttons"></div>
-        <P>
-        <!-- %BUTTONPLACEHOLDER% -->
-        <!-- <h4>Pump Test</h4>
-        <label class="switch">
-            <input type="checkbox" onchange="toggleCheckbox(this)" id=0
-        </label> -->
-        </P>
-        <p>
-        <input type="text" id="var1" placeholder="Enter value for Injection Start RPM">
-        <button onclick="updateStartRPM()">Update Start RPM</button>
-        </p>
-        <p>
-        <input type="text" id="var2" placeholder="Enter value for Injection End RPM">
-        <button onclick="updateEndRPM()">Update End RPM</button>
-        </p>
-    </div>
+  <h3>Blumini Injects Test and Setup Page</h3>
+  <div class="flex-container">
+    <h4>LED Test</h4>
+    <label class="switch" for="0">
+      <input type="checkbox" id="0" onchange="()=>toggleCheckbox(this)">
+      <span class="slider">
+      </span>
+    </label>
+    <h4>Injector Test</h4>
+    <label class="switch" for="1">
+      <input type="checkbox" id="1" onchange="()=>toggleCheckbox(this)">
+      <span class="slider">
+      </span>
+    </label>
+    <h4>Pump Test</h4>
+    <label class="switch" for="2">
+      <input type="checkbox" id="2" onchange="()=>toggleCheckbox(this)">
+      <span class="slider">
+      </span>
+    </label>
+    <h4>Spare Output Test</h4>
+    <label class="switch" for="3">
+      <input type="checkbox" id="3" onchange="()=>toggleCheckbox(this)">
+      <span class="slider">
+      </span>
+    </label>
+    <br>
+    <input type="text" id="var1" placeholder="Enter value for Injection Start RPM">
+    <button onclick="updateStartRPM()">Update Start RPM</button>
+    <br>
+    <input type="text" id="var2" placeholder="Enter value for Injection End RPM">
+    <button onclick="updateEndRPM()">Update End RPM</button>
+  </div>
   <script>
-    window.onload = function() {
+
+    // Define the number of outputs
+    var numOutputs = 4;
+
+    window.onload = function () {
       let xhr = new XMLHttpRequest();
       xhr.open("GET", "/getRelayStates", true);
-      xhr.onload = function() {
+      xhr.onload = function () {
         if (xhr.status == 200) {
           let relayStates = JSON.parse(xhr.responseText);
           for (let i = 0; i < numOutputs; i++) {
-           let checkbox = document.getElementById(i);
-            checkbox.checked = relayStates[i.toString()] == HIGH;
+            let checkbox = document.getElementById(i);
+            checkbox.checked = relayStates[i.toString()] === "HIGH";
           }
         }
       };
       xhr.send();
-    }
-
-    // Define the number of outputs
-    var numOutputs = 3;
-
-    // Get the buttons div
-    var buttonsDiv = document.getElementById('buttons');
-
-    // Create a checkbox and label for each output
-    for (var i = 0; i < numOutputs; i++) {
-      // Create checkbox
-      var checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.id = i;
-      checkbox.onchange = function() { toggleCheckbox(this); };
-
-      // Create label
-      var label = document.createElement('label');
-      label.htmlFor = i;
-      label.textContent = ' Relay #' + (i+1);
-
-      // Append checkbox and label to div
-      buttonsDiv.appendChild(checkbox);
-      buttonsDiv.appendChild(label);
-      buttonsDiv.appendChild(document.createElement('br'));
     }
 
     function toggleCheckbox(element) {
@@ -185,7 +200,7 @@ const char index_html[] PROGMEM = R"rawliteral(
     function updateStartRPM() {
       let startRPM = document.getElementById('var1').value;
       // Validation
-      if (!Number.isInteger(Number(startRPM))){
+      if (!Number.isInteger(Number(startRPM))) {
         alert("Must be a whole number");
         return;
       }
@@ -195,12 +210,12 @@ const char index_html[] PROGMEM = R"rawliteral(
       // let the user know it worked
       xhr.onload = () => {
         if (xhr.status == 200) {
-            alert("Updated Start RPM to", xhr.responseText)
+          alert("Updated Start RPM to", xhr.responseText)
         } else {
-            alert("Failed to update Start RPM, Error: ", xhr.status)
+          alert("Failed to update Start RPM, Error: ", xhr.status)
         }
       };
-      
+
       // Error if the request deosnt go through
       xhr.onerror = () => {
         alert("Request failed.");
@@ -210,7 +225,7 @@ const char index_html[] PROGMEM = R"rawliteral(
     function updateEndRPM() {
       let endRPM = document.getElementById('var2').value;
       // Validation
-      if (!Number.isInteger(Number(endRPM))){
+      if (!Number.isInteger(Number(endRPM))) {
         alert("Must be a whole number");
         return;
       }
@@ -220,12 +235,12 @@ const char index_html[] PROGMEM = R"rawliteral(
       // let the user know it went througg
       xhr.onload = () => {
         if (xhr.status == 200) {
-            alert("Updated End RPM")
+          alert("Updated End RPM")
         } else {
-            alert("Failed to update End RPM, Error: ", xhr.status)
+          alert("Failed to update End RPM, Error: ", xhr.status)
         }
       };
-      
+
       // Error if the request doesnt go through
       xhr.onerror = () => {
         alert("Request failed.");
@@ -234,6 +249,7 @@ const char index_html[] PROGMEM = R"rawliteral(
     }
   </script>
 </body>
+
 </html>
 )rawliteral";
 
@@ -281,14 +297,23 @@ void setup()
 #endif
 
   // if you don't have #define USE_INTRANET, use AP Mode
-#ifndef USE_INTRANET
+#ifdef USE_AP
   WiFi.softAP(AP_SSID, AP_PASS);
   delay(100);
   WiFi.softAPConfig(PageIP, gateway, subnet);
   delay(100);
-  Actual_IP = WiFi.softAPIP();
+  actualIP = WiFi.softAPIP();
   Serial.print("IP address: ");
-  Serial.println(Actual_IP);
+  Serial.println(actualIP);
+#endif
+
+#ifdef SIMULATOR
+WiFi.begin("Wokwi-GUEST", "", 6);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(100);
+    Serial.print(".");
+  }
+  Serial.println(" Connected!");
 #endif
   ////////////// END WIFI SETUP//////////
 #pragma endregion
