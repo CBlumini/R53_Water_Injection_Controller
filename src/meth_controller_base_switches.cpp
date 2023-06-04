@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <secrets.h>
 #include <ArduinoJson.h>
+#include <stdio.h>
 // #include <web_page.h>
 
 // here you post web pages to your homes intranet which will make page debugging easier
@@ -48,7 +49,7 @@ int injectionStartRPM = 0;
 int injectionEndRPM = 0;
 float scalingFactor = 0.0;
 
-// html code
+///////////////////////// WEB PAGE CODE ///////////////////
 #pragma region
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML>
@@ -139,25 +140,25 @@ const char index_html[] PROGMEM = R"rawliteral(
   <div class="flex-container">
     <h4>LED Test</h4>
     <label class="switch" for="0">
-      <input type="checkbox" id="0" onchange="()=>toggleCheckbox(this)">
+      <input type="checkbox" id="0" onchange="toggleCheckbox(this)">
       <span class="slider">
       </span>
     </label>
     <h4>Injector Test</h4>
     <label class="switch" for="1">
-      <input type="checkbox" id="1" onchange="()=>toggleCheckbox(this)">
+      <input type="checkbox" id="1" onchange="toggleCheckbox(this)">
       <span class="slider">
       </span>
     </label>
     <h4>Pump Test</h4>
     <label class="switch" for="2">
-      <input type="checkbox" id="2" onchange="()=>toggleCheckbox(this)">
+      <input type="checkbox" id="2" onchange="toggleCheckbox(this)">
       <span class="slider">
       </span>
     </label>
     <h4>Spare Output Test</h4>
     <label class="switch" for="3">
-      <input type="checkbox" id="3" onchange="()=>toggleCheckbox(this)">
+      <input type="checkbox" id="3" onchange="toggleCheckbox(this)">
       <span class="slider">
       </span>
     </label>
@@ -189,6 +190,7 @@ const char index_html[] PROGMEM = R"rawliteral(
     }
 
     function toggleCheckbox(element) {
+      console.log("checkbox toggled")
       let xhr = new XMLHttpRequest();
       if (element.checked) {
         xhr.open("GET", "/update?relay=" + element.id + "&state=1", true);
@@ -254,7 +256,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 )rawliteral";
 
 #pragma endregion
-
+//////////////////////// END WEB CODE /////////////////////
 // I think I got this code from the wifi example
 void printWifiStatus()
 {
@@ -279,6 +281,13 @@ void printWifiStatus()
 }
 
 // end of code
+
+int ledOutput(int dutyCycle, int freqency, int duration)
+{
+  Serial.println("running LED");
+  //stuff here
+  return 0;
+}
 
 void setup()
 {
@@ -339,17 +348,26 @@ WiFi.begin("Wokwi-GUEST", "", 6);
   // Send a GET request to <ESP_IP>/update?relay=<inputMessage>&state=<inputMessage2>
   server.on("/update", HTTP_GET, [](AsyncWebServerRequest *request)
             {
-    String relayId;
-    String relayState;
+    Serial.println("toggling output: " + String(request->getParam("relay")->value()));
+    int relayId;
+    int relayState;
     if (request->hasParam("relay") & request->hasParam("state")) {
-      relayId = request->getParam("relay")->value();
-      relayState = request->getParam("state")->value();
-      Serial.print("NO ");
-      digitalWrite(actuatorOutputs[relayId.toInt()-1], !relayState.toInt());
+      relayId = request->getParam("relay")->value().toInt();
+      relayState = request->getParam("state")->value().toInt();
+      Serial.println("NO ");
+      switch (relayId)
+      {
+      case 0:
+        Serial.println("running code for relay 0");
+        ledOutput(50, 50, 10);
+        break;
+      
+      default:
+        break;
+      }
+      digitalWrite(actuatorOutputs[relayId], !relayState);
     }
-    else {
-      relayId = "No message sent";
-    }
+
     Serial.println(relayId + relayState);
     request->send(200, "text/plain", "OK"); });
 
@@ -387,3 +405,4 @@ WiFi.begin("Wokwi-GUEST", "", 6);
 void loop()
 {
 }
+
