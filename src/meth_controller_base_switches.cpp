@@ -3,20 +3,20 @@
 #include <Arduino.h>
 #include <secrets.h>
 #include <ArduinoJson.h>
-#include <stdio.h>
-// #include <web_page.h>
+#include <Preferences.h>
+#include <CustomFunctions.h>
+#include <Constants.h>
 
-// here you post web pages to your homes intranet which will make page debugging easier
-// as you just need to refresh the browser as opposed to reconnection to the web server
-// #define USE_INTRANET
+// Set how you want to connect
+#define USE_INTRANET
 // #define USE_AP
-#define SIMULATOR
+// #define SIMULATOR
 
 // once  you are read to go live these settings are what you client will connect to
 #define AP_SSID "Water Inject"
 #define AP_PASS NULL
 
-#define NORMALLY_OPEN true
+// #define NORMALLY_OPEN true
 
 // Networking Setup
 IPAddress PageIP(192, 168, 1, 1);
@@ -28,23 +28,9 @@ IPAddress actualIP;
 
 AsyncWebServer server(80);
 
-// Outputs
-int ledPin = 2;
-int valvePin = 25;
-int pumpRelayPin = 26;
-int spareOutputPin = 27;
-// Inputs
-int pushToInjectPin = 34;
-int flowMeterPin = 35;
-int injectorDutyPin = 36;
-int spareInputPin = 39;
-
 int actuatorOutputs[] = {ledPin, valvePin, pumpRelayPin, spareOutputPin};
 int sensorInput[] = {pushToInjectPin, flowMeterPin, injectorDutyPin, spareInputPin};
-// int NUM_OUTPUTS = 3;
 
-// const char *RELAY_REF = "relay";
-// const char *STATE_REF = "state";
 int injectionStartRPM = 0;
 int injectionEndRPM = 0;
 float scalingFactor = 0.0;
@@ -280,14 +266,7 @@ void printWifiStatus()
   Serial.println(ip);
 }
 
-// end of code
 
-int ledOutput(int dutyCycle, int freqency, int duration)
-{
-  Serial.println("running LED");
-  //stuff here
-  return 0;
-}
 
 void setup()
 {
@@ -333,10 +312,9 @@ WiFi.begin("Wokwi-GUEST", "", 6);
 
   // Set up the output pins
   pinMode(ledPin, OUTPUT);
-  ledcSetup(0, 100, 8);
-  ledcAttachPin(valvePin, 0);
   pinMode(pumpRelayPin, OUTPUT);
   pinMode(spareOutputPin, OUTPUT);
+  setupBuiltInLED(10, 0, 8, ledPin);
 
   // Set up the input pins
 
@@ -359,7 +337,14 @@ WiFi.begin("Wokwi-GUEST", "", 6);
       {
       case 0:
         Serial.println("running code for relay 0");
-        ledOutput(50, 50, 10);
+        if (relayState == 1) {
+          Serial.println("Setting output to 10");
+          ledOutput(10);
+        }
+        else {
+          Serial.println("Setting output to 0");
+          ledOutput(0);
+        }
         break;
       
       default:
@@ -404,5 +389,6 @@ WiFi.begin("Wokwi-GUEST", "", 6);
 
 void loop()
 {
+
 }
 
