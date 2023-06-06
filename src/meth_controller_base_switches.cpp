@@ -8,9 +8,9 @@
 #include <Constants.h>
 
 // Set how you want to connect
-#define USE_INTRANET
+// #define USE_INTRANET
 // #define USE_AP
-// #define SIMULATOR
+#define SIMULATOR
 
 // once  you are read to go live these settings are what you client will connect to
 #define AP_SSID "Water Inject"
@@ -34,6 +34,11 @@ int sensorInput[] = {pushToInjectPin, flowMeterPin, injectorDutyPin, spareInputP
 int injectionStartRPM = 0;
 int injectionEndRPM = 0;
 float scalingFactor = 0.0;
+
+bool outputFlag = false;
+unsigned long currentTime = 0;
+unsigned long prevTime = 0;
+int outState = LOW;
 
 ///////////////////////// WEB PAGE CODE ///////////////////
 #pragma region
@@ -244,33 +249,10 @@ const char index_html[] PROGMEM = R"rawliteral(
 #pragma endregion
 //////////////////////// END WEB CODE /////////////////////
 // I think I got this code from the wifi example
-void printWifiStatus()
-{
-
-  // print the SSID of the network you're attached to:
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
-
-  // print your WiFi shield's IP address:
-  ip = WiFi.localIP();
-  Serial.print("IP Address: ");
-  Serial.println(ip);
-
-  // print the received signal strength:
-  long rssi = WiFi.RSSI();
-  Serial.print("signal strength (RSSI):");
-  Serial.print(rssi);
-  Serial.println(" dBm");
-  // print where to go in a browser:
-  Serial.print("Open http://");
-  Serial.println(ip);
-}
-
-
 
 void setup()
 {
-// WIFI SETUP
+//////////////////////// WIFI SETUP //////////////////
 #pragma region
 #ifdef USE_INTRANET
   WiFi.begin(LOCAL_SSID, LOCAL_PASS);
@@ -296,8 +278,9 @@ void setup()
 #endif
 
 #ifdef SIMULATOR
-WiFi.begin("Wokwi-GUEST", "", 6);
-  while (WiFi.status() != WL_CONNECTED) {
+  WiFi.begin("Wokwi-GUEST", "", 6);
+  while (WiFi.status() != WL_CONNECTED)
+  {
     delay(100);
     Serial.print(".");
   }
@@ -314,7 +297,7 @@ WiFi.begin("Wokwi-GUEST", "", 6);
   pinMode(ledPin, OUTPUT);
   pinMode(pumpRelayPin, OUTPUT);
   pinMode(spareOutputPin, OUTPUT);
-  setupBuiltInLED(10, 0, 8, ledPin);
+  // setupBuiltInLED(10, 0, 8, ledPin);
 
   // Set up the input pins
 
@@ -326,24 +309,26 @@ WiFi.begin("Wokwi-GUEST", "", 6);
   // Send a GET request to <ESP_IP>/update?relay=<inputMessage>&state=<inputMessage2>
   server.on("/update", HTTP_GET, [](AsyncWebServerRequest *request)
             {
-    Serial.println("toggling output: " + String(request->getParam("relay")->value()));
+    // Serial.println("toggling output: " + String(request->getParam("relay")->value()));
     int relayId;
     int relayState;
     if (request->hasParam("relay") & request->hasParam("state")) {
       relayId = request->getParam("relay")->value().toInt();
       relayState = request->getParam("state")->value().toInt();
-      Serial.println("NO ");
       switch (relayId)
       {
       case 0:
         Serial.println("running code for relay 0");
         if (relayState == 1) {
-          Serial.println("Setting output to 10");
-          ledOutput(10);
+          Serial.println("Turning on 0");
+          // ledOutput(10);
+          outputFlag = true;
+          // cycleOutput(1000, ledPin);
         }
         else {
-          Serial.println("Setting output to 0");
-          ledOutput(0);
+          Serial.println("Turning off 0");
+          // ledOutput(0);
+          outputFlag = false;
         }
         break;
       
@@ -390,5 +375,50 @@ WiFi.begin("Wokwi-GUEST", "", 6);
 void loop()
 {
 
+
+  if (outputFlag)
+  {
+    currentTime = millis();
+    if(currentTime - prevTime > 1000){
+      prevTime = currentTime;
+      Serial.println("time met");
+      if(outState == LOW){
+        Serial.println("going high");
+        outState = HIGH;
+      }
+      else {
+        outState = LOW;
+      }
+    
+    digitalWrite(ledPin, outState);
+    }
+    delay(10);
+  }
+  else {
+    digitalWrite(ledPin, LOW);
+  }
+
+
 }
 
+// void printWifiStatus()
+// {
+
+//   // print the SSID of the network you're attached to:
+//   Serial.print("SSID: ");
+//   Serial.println(WiFi.SSID());
+
+//   // print your WiFi shield's IP address:
+//   ip = WiFi.localIP();
+//   Serial.print("IP Address: ");
+//   Serial.println(ip);
+
+//   // print the received signal strength:
+//   long rssi = WiFi.RSSI();
+//   Serial.print("signal strength (RSSI):");
+//   Serial.print(rssi);
+//   Serial.println(" dBm");
+//   // print where to go in a browser:
+//   Serial.print("Open http://");
+//   Serial.println(ip);
+// }

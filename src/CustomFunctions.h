@@ -6,6 +6,7 @@
 // Declare your functions here:
 void setupBuiltInLED(int freq, int ledChannel, int resolution, int ledPin);
 void ledOutput(int dutyCycle);
+void cycleOutput(int cycleTime, int output);
 
 // void setStartRPM(int startRPM);
 // int getStartRPM();

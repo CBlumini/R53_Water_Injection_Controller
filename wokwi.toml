@@ -2,6 +2,8 @@
 version = 1
 firmware = '.pio/build/nodemcu-32s/firmware.bin'
 elf = '.pio/build/nodemcu-32s/firmware.elf'
+gdbServerPort=3333
+
 
 # Forward http://localhost:8180 to port 80 on the simulated ESP32:
 [[net.forward]]
