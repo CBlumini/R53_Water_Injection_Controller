@@ -2,6 +2,9 @@
 #include <Arduino.h>
 
 extern bool outputFlag;
+extern unsigned long currentTime;
+extern unsigned long prevTime;
+extern int outState;
 
 void setupBuiltInLED(int freq, int ledChannel, int resolution, int ledPin){
   ledcSetup(ledChannel, freq, resolution);
@@ -15,28 +18,27 @@ void ledOutput(int dutyCycle)
   ledcWrite(0, dutyCycle);
 }
 
-void cycleOutput(int cycleTime, int output)
+void cycleOutput(int cycleTime, int output, bool outputToggle)
 {
-  Serial.println("cycling output");
-  unsigned long currentTime = 0;
-  unsigned long prevTime = 0;
-  int outState = LOW;
-  while (outputFlag)
-  {
-    currentTime = millis();
-    if(currentTime - prevTime > cycleTime){
-      prevTime = currentTime;
-      Serial.println("time met");
-      if(outState == LOW){
-        Serial.println("going high");
-        outState = HIGH;
+  if (outputToggle)
+    {
+      currentTime = millis();
+      if(currentTime - prevTime > 1000){
+        prevTime = currentTime;
+        Serial.println("time met");
+        if(outState == LOW){
+          Serial.println("going high");
+          outState = HIGH;
+        }
+        else {
+          outState = LOW;
+        }
+      
+      digitalWrite(output, outState);
       }
-      else {
-        outState = LOW;
-      }
-    
-    digitalWrite(output, outState);
+      delay(10);
     }
-    delay(10);
-  }
+    else {
+      digitalWrite(output, LOW);
+    }
 }

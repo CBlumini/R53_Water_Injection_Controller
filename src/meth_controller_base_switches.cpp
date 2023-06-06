@@ -35,7 +35,11 @@ int injectionStartRPM = 0;
 int injectionEndRPM = 0;
 float scalingFactor = 0.0;
 
-bool outputFlag = false;
+bool outputFlag0 = false;
+bool outputFlag1 = false;
+bool outputFlag2 = false;
+bool outputFlag3 = false;
+
 unsigned long currentTime = 0;
 unsigned long prevTime = 0;
 int outState = LOW;
@@ -306,10 +310,8 @@ void setup()
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send_P(200, "text/html", index_html); });
 
-  // Send a GET request to <ESP_IP>/update?relay=<inputMessage>&state=<inputMessage2>
   server.on("/update", HTTP_GET, [](AsyncWebServerRequest *request)
             {
-    // Serial.println("toggling output: " + String(request->getParam("relay")->value()));
     int relayId;
     int relayState;
     if (request->hasParam("relay") & request->hasParam("state")) {
@@ -321,17 +323,26 @@ void setup()
         Serial.println("running code for relay 0");
         if (relayState == 1) {
           Serial.println("Turning on 0");
-          // ledOutput(10);
-          outputFlag = true;
+          outputFlag0 = true;
           // cycleOutput(1000, ledPin);
         }
         else {
           Serial.println("Turning off 0");
-          // ledOutput(0);
-          outputFlag = false;
+          outputFlag0 = false;
         }
         break;
-      
+      case 1:
+        Serial.println("running code for relay 1");
+        if (relayState == 1) {
+          Serial.println("Turning on 1");
+          outputFlag1 = true;
+          // cycleOutput(1000, ledPin);
+        }
+        else {
+          Serial.println("Turning off 1");
+          outputFlag1 = false;
+        }
+        break;
       default:
         break;
       }
@@ -374,30 +385,7 @@ void setup()
 
 void loop()
 {
-
-
-  if (outputFlag)
-  {
-    currentTime = millis();
-    if(currentTime - prevTime > 1000){
-      prevTime = currentTime;
-      Serial.println("time met");
-      if(outState == LOW){
-        Serial.println("going high");
-        outState = HIGH;
-      }
-      else {
-        outState = LOW;
-      }
-    
-    digitalWrite(ledPin, outState);
-    }
-    delay(10);
-  }
-  else {
-    digitalWrite(ledPin, LOW);
-  }
-
+  cycleOutput(1000, ledPin, outputFlag0);
 
 }
 
