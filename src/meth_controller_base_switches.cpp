@@ -317,36 +317,7 @@ void setup()
     if (request->hasParam("relay") & request->hasParam("state")) {
       relayId = request->getParam("relay")->value().toInt();
       relayState = request->getParam("state")->value().toInt();
-      switch (relayId)
-      {
-      case 0:
-        Serial.println("running code for relay 0");
-        if (relayState == 1) {
-          Serial.println("Turning on 0");
-          outputFlag0 = true;
-          // cycleOutput(1000, ledPin);
-        }
-        else {
-          Serial.println("Turning off 0");
-          outputFlag0 = false;
-        }
-        break;
-      case 1:
-        Serial.println("running code for relay 1");
-        if (relayState == 1) {
-          Serial.println("Turning on 1");
-          outputFlag1 = true;
-          // cycleOutput(1000, ledPin);
-        }
-        else {
-          Serial.println("Turning off 1");
-          outputFlag1 = false;
-        }
-        break;
-      default:
-        break;
-      }
-      digitalWrite(actuatorOutputs[relayId], !relayState);
+      setFlags(relayId, relayState);
     }
 
     Serial.println(relayId + relayState);
@@ -386,6 +357,8 @@ void setup()
 void loop()
 {
   cycleOutput(1000, ledPin, outputFlag0);
+  cycleOutput(1000, valvePin, outputFlag1);
+  cycleOutput(1000, pumpRelayPin, outputFlag2);
 
 }
 

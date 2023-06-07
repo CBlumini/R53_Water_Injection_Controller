@@ -7,6 +7,7 @@
 void setupBuiltInLED(int freq, int ledChannel, int resolution, int ledPin);
 void ledOutput(int dutyCycle);
 void cycleOutput(int cycleTime, int output, bool outputToggle);
+void setFlags(int relayId, int relayState);
 
 // void setStartRPM(int startRPM);
 // int getStartRPM();
