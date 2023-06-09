@@ -6,11 +6,12 @@
 #include <Preferences.h>
 #include <CustomFunctions.h>
 #include <Constants.h>
+#include <PreferencesManager.h>
 
 // Set how you want to connect
-// #define USE_INTRANET
+#define USE_INTRANET
 // #define USE_AP
-#define SIMULATOR
+// #define SIMULATOR
 
 // once  you are read to go live these settings are what you client will connect to
 #define AP_SSID "Water Inject"
@@ -43,6 +44,9 @@ bool outputFlag3 = false;
 unsigned long currentTime = 0;
 unsigned long prevTime = 0;
 int outState = LOW;
+
+PreferencesManager prefMan;
+
 
 ///////////////////////// WEB PAGE CODE ///////////////////
 #pragma region
@@ -307,6 +311,9 @@ void setup()
 
   ///////////////SETUP ROUTES////////////
   // Route for root / web page
+
+  
+
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send_P(200, "text/html", index_html); });
 
@@ -327,6 +334,7 @@ void setup()
             {
   if (request->hasParam("startRPM")) {
     injectionStartRPM = request->getParam("startRPM")->value().toInt();
+    prefMan.setPreference("startRPM", injectionStartRPM);
     Serial.println("Injection Start RPM is: " + String(injectionStartRPM));
   }
   request->send(200, "text/plain", String(injectionStartRPM)); });
@@ -335,9 +343,11 @@ void setup()
             {
   if (request->hasParam("endRPM")) {
     injectionEndRPM = request->getParam("endRPM")->value().toInt();
+    prefMan.setPreference("endRPM", injectionEndRPM);
     Serial.println("Injection End RPM is: " + String(injectionEndRPM));
   }
   request->send(200, "text/plain", String(injectionEndRPM)); });
+
 
   server.on("/getRelayStates", HTTP_GET, [](AsyncWebServerRequest *request)
             {
@@ -350,8 +360,22 @@ void setup()
     serializeJson(doc, response);
     request->send(200, "application/json", response); });
 
-  // Start server
-  server.begin();
+
+  server.on("/getStartEnd", HTTP_GET, [](AsyncWebServerRequest *request)
+  {
+    Serial.println("getting start and end");
+    DynamicJsonDocument doc(1024);
+    Serial.println("start" + String(prefMan.getPreference("startRPM")));
+    doc["startRPM"] = prefMan.getPreference("startRPM");
+    doc["endRPM"] = prefMan.getPreference("endRPM");
+    String response;
+    serializeJson(doc, response);
+    request->send(200, "application/json", response);
+  });
+
+// Start server
+server.begin();
+
 }
 
 void loop()
