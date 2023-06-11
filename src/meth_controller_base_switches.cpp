@@ -6,7 +6,10 @@
 #include <Preferences.h>
 #include <CustomFunctions.h>
 #include <Constants.h>
-#include <PreferencesManager.h>
+#include <Preferences.h>
+#include <typeinfo>
+#include <iostream>
+// #include <PreferencesManager.h>
 
 // Set how you want to connect
 #define USE_INTRANET
@@ -45,7 +48,20 @@ unsigned long currentTime = 0;
 unsigned long prevTime = 0;
 int outState = LOW;
 
-PreferencesManager prefMan;
+struct Values {
+    int key_3000 = 0;
+    int key_3500 = 0;
+    int key_4000 = 0;
+    int key_4500 = 0;
+    int key_5000 = 0;
+    int key_5500 = 0;
+    int key_6000 = 0;
+    int key_6500 = 0;
+    int key_7000 = 0;
+};
+
+
+// PreferencesManager prefMan;
 
 
 ///////////////////////// WEB PAGE CODE ///////////////////
@@ -175,7 +191,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     window.onload = function () {
       let xhr = new XMLHttpRequest();
-      xhr.open("GET", "/getRelayStates", true);
+      xhr.open("GET", "/getOutputStates", true);
       xhr.onload = function () {
         if (xhr.status == 200) {
           let relayStates = JSON.parse(xhr.responseText);
@@ -258,6 +274,8 @@ const char index_html[] PROGMEM = R"rawliteral(
 //////////////////////// END WEB CODE /////////////////////
 // I think I got this code from the wifi example
 
+
+Preferences preferences;
 void setup()
 {
 //////////////////////// WIFI SETUP //////////////////
@@ -303,17 +321,14 @@ void setup()
 
   // Set up the output pins
   pinMode(ledPin, OUTPUT);
+  pinMode(valvePin, OUTPUT);
   pinMode(pumpRelayPin, OUTPUT);
   pinMode(spareOutputPin, OUTPUT);
-  // setupBuiltInLED(10, 0, 8, ledPin);
-
-  // Set up the input pins
+ 
+  
 
   ///////////////SETUP ROUTES////////////
   // Route for root / web page
-
-  
-
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send_P(200, "text/html", index_html); });
 
@@ -333,23 +348,43 @@ void setup()
   server.on("/updateStartRPM", HTTP_GET, [](AsyncWebServerRequest *request)
             {
   if (request->hasParam("startRPM")) {
+    // open up preferences
+    preferences.begin("my-app", false);
+
+    // get the value from the web request and store
+    int injectionStartRPM; 
     injectionStartRPM = request->getParam("startRPM")->value().toInt();
-    prefMan.setPreference("startRPM", injectionStartRPM);
     Serial.println("Injection Start RPM is: " + String(injectionStartRPM));
+    preferences.putInt("startRPM", injectionStartRPM);
+
+    // retreive the int for testing purposes
+    Serial.println(preferences.getInt("startRPM", 0));
+
+    // close preferences
+    preferences.end();
+
   }
   request->send(200, "text/plain", String(injectionStartRPM)); });
 
   server.on("/updateEndRPM", HTTP_GET, [](AsyncWebServerRequest *request)
             {
   if (request->hasParam("endRPM")) {
+    // open preferences
+    preferences.begin("my-app", false);
+    
+    // get the vale from the web request and store
+    int injectionEndRPM;
     injectionEndRPM = request->getParam("endRPM")->value().toInt();
-    prefMan.setPreference("endRPM", injectionEndRPM);
     Serial.println("Injection End RPM is: " + String(injectionEndRPM));
+    preferences.putInt("endRPM", injectionEndRPM);
+
+    // retrieve for testing purposes
+    Serial.println(Serial.println(preferences.getInt("endRPM", 0)));
   }
   request->send(200, "text/plain", String(injectionEndRPM)); });
 
 
-  server.on("/getRelayStates", HTTP_GET, [](AsyncWebServerRequest *request)
+  server.on("/getOutputStates", HTTP_GET, [](AsyncWebServerRequest *request)
             {
     DynamicJsonDocument doc(1024);
     for (int i = 0; i < 4; i++)
@@ -365,9 +400,11 @@ void setup()
   {
     Serial.println("getting start and end");
     DynamicJsonDocument doc(1024);
-    Serial.println("start" + String(prefMan.getPreference("startRPM")));
-    doc["startRPM"] = prefMan.getPreference("startRPM");
-    doc["endRPM"] = prefMan.getPreference("endRPM");
+    // Serial.println("start" + String(prefMan.getPreference("startRPM")));
+    // doc["startRPM"] = prefMan.getPreference("startRPM");
+    // doc["endRPM"] = prefMan.getPreference("endRPM");
+    doc["startRPM"] = preferences.getUInt("start", 0);
+    Serial.println(preferences.getString("start"));
     String response;
     serializeJson(doc, response);
     request->send(200, "application/json", response);
@@ -376,6 +413,20 @@ void setup()
 // Start server
 server.begin();
 
+}
+
+template <typename T>
+void printType(const T& var) {
+  if (std::is_same<T, int>::value)
+    Serial.println("int");
+  else if (std::is_same<T, float>::value)
+    Serial.println("float");
+  else if (std::is_same<T, String>::value)
+    Serial.println("String");
+  else if (std::is_same<T, unsigned int>::value)
+    Serial.println("unsigned int");
+  else
+    Serial.println("Unknown type");
 }
 
 void loop()
