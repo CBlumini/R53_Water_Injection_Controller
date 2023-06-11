@@ -12,9 +12,9 @@
 // #include <PreferencesManager.h>
 
 // Set how you want to connect
-#define USE_INTRANET
+// #define USE_INTRANET
 // #define USE_AP
-// #define SIMULATOR
+#define SIMULATOR
 
 // once  you are read to go live these settings are what you client will connect to
 #define AP_SSID "Water Inject"
@@ -184,25 +184,111 @@ const char index_html[] PROGMEM = R"rawliteral(
     <input type="text" id="var2" placeholder="Enter value for Injection End RPM">
     <button onclick="updateEndRPM()">Update End RPM</button>
   </div>
+  <div class="flex-container">
+    <h4>Enter Values:</h4>
+    <input type="text" id="key_3000" placeholder="Enter value for key_3000" onchange="updateDemand('key_3000')">
+    <input type="text" id="key_3500" placeholder="Enter value for key_3500" onchange="updateDemand('key_3500')">
+    <input type="text" id="key_4000" placeholder="Enter value for key_4000" onchange="updateDemand('key_4000')">
+    <input type="text" id="key_4500" placeholder="Enter value for key_4500" onchange="updateDemand('key_4500')">
+    <input type="text" id="key_5000" placeholder="Enter value for key_5000" onchange="updateDemand('key_5000')">
+    <input type="text" id="key_5500" placeholder="Enter value for key_5500" onchange="updateDemand('key_5500')">
+    <input type="text" id="key_6000" placeholder="Enter value for key_6000" onchange="updateDemand('key_6000')">
+    <input type="text" id="key_6500" placeholder="Enter value for key_6500" onchange="updateDemand('key_6500')">
+    <input type="text" id="key_7000" placeholder="Enter value for key_7000" onchange="updateDemand('key_7000')">
+    <button onclick="submitDemands()">Submit Data</button>
+  </div>
   <script>
+    var injectionDemands = {
+      "key_3000": null,
+      "key_3500": null,
+      "key_4000": null,
+      "key_4500": null,
+      "key_5000": null,
+      "key_5500": null,
+      "key_6000": null,
+      "key_6500": null,
+      "key_7000": null,
+    };
 
-    // Define the number of outputs
     var numOutputs = 4;
 
-    window.onload = function () {
+    function updateDemand(key){
+      console.log(key)
+      let value = document.getElementById(key).value;
+      console.log("The val: ", value)
+      if (!Number.isInteger(Number(value))) {
+        alert("Must be integer")
+        return;
+      }
+      injectionDemands[key] = Number(value)
+      console.log(injectionDemands)
+    }
+
+    function submitDemands() {
+      console.log("User data to be sent to server: ", injectionDemands);
+
       let xhr = new XMLHttpRequest();
-      xhr.open("GET", "/getOutputStates", true);
+      xhr.open("POST", "/updateDemands", true);
+      xhr.setRequestHeader("Content-Type", "application/json");
+
       xhr.onload = function () {
-        if (xhr.status == 200) {
-          let relayStates = JSON.parse(xhr.responseText);
+      if (xhr.status == 200) {
+        alert("Data successfully sent to the server.");
+      } else {
+        alert("Failed to send data. Error: " + xhr.status);
+      }
+      };
+
+      xhr.onerror = function () {
+        alert("Request failed.");
+      };
+
+      xhr.send(JSON.stringify(injectionDemands));
+    }
+
+    window.onload = function () {
+      // first request, get the state of the outputs
+      let xhr1 = new XMLHttpRequest();
+      xhr1.open("GET", "/getOutputStates", true);
+      xhr1.onload = function () {
+        if (xhr1.status == 200) {
+          let relayStates = JSON.parse(xhr1.responseText);
           for (let i = 0; i < numOutputs; i++) {
             let checkbox = document.getElementById(i);
             checkbox.checked = relayStates[i.toString()] === "HIGH";
           }
         }
       };
-      xhr.send();
+      xhr1.send();
+
+      // second request get the state of the injection setpoints
+      let xhr2 = new XMLHttpRequest();
+      xhr2.open("GET", "/getInjectionDemands", true);
+
+      xhr2.onload = function () {
+        if (xhr2.status == 200) {
+          let demandVals = JSON.parse(xhr2.responseText);
+          let demandKeys = ["key_3000", "key_3500", "key_4000", "key_4500", "key_5000", "key_5500", "key_6000", "key_6500", "key_7000"]
+
+          demandKeys.forEach((key) => {
+            let input = document.getElementById(key);
+            if (input && demandVals.hasOwnProperty(key)) {
+              input.placeholder = `Current ${demandVals[key]}`;
+              injectionDemands[key] = demandVals[key];
+            }
+          });
+        } else {
+              console.log("Failed to load data")
+            }
+      }
+      xhr2.onerror = function () {
+        console.log("Request Failed")
+      };
+        
+      xhr2.send();
     }
+
+
 
     function toggleCheckbox(element) {
       console.log("checkbox toggled")
@@ -400,9 +486,7 @@ void setup()
   {
     Serial.println("getting start and end");
     DynamicJsonDocument doc(1024);
-    // Serial.println("start" + String(prefMan.getPreference("startRPM")));
-    // doc["startRPM"] = prefMan.getPreference("startRPM");
-    // doc["endRPM"] = prefMan.getPreference("endRPM");
+
     doc["startRPM"] = preferences.getUInt("start", 0);
     Serial.println(preferences.getString("start"));
     String response;
@@ -410,24 +494,54 @@ void setup()
     request->send(200, "application/json", response);
   });
 
+server.on("/updateDemands", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) 
+  {
+    DynamicJsonDocument doc(1024);
+    DeserializationError error = deserializeJson(doc, data);
+    if (error) {
+      Serial.print(F("deserializeJson() failed: "));
+      Serial.println(error.f_str());
+      return;
+    }
+
+      // Expecting a JSON object so check it's the correct type
+    if (!doc.is<JsonObject>()) {
+      Serial.println(F("JSON is not an object"));
+      return;
+    }
+
+    JsonObject obj = doc.as<JsonObject>();
+
+    for(JsonPair p : obj) {
+      Serial.println(p.key().c_str());
+      Serial.println(p.value().as<int>());
+
+      // Values[]
+    };
+
+
+
+    // Serial.println("Post triggered");
+    // int params = request->params();
+    // Serial.println(params);
+    // for (int i=0; i<params; i++){
+    //   Serial.println(i);
+    //   AsyncWebParameter* p = request->getParam(i);
+    //   if(p->isPost()){
+    //     Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
+
+    //   }
+    // }
+    // request->send(200, "text/plain", "Data received");
+
+  });
+
+
 // Start server
 server.begin();
 
 }
 
-template <typename T>
-void printType(const T& var) {
-  if (std::is_same<T, int>::value)
-    Serial.println("int");
-  else if (std::is_same<T, float>::value)
-    Serial.println("float");
-  else if (std::is_same<T, String>::value)
-    Serial.println("String");
-  else if (std::is_same<T, unsigned int>::value)
-    Serial.println("unsigned int");
-  else
-    Serial.println("Unknown type");
-}
 
 void loop()
 {
@@ -437,24 +551,3 @@ void loop()
 
 }
 
-// void printWifiStatus()
-// {
-
-//   // print the SSID of the network you're attached to:
-//   Serial.print("SSID: ");
-//   Serial.println(WiFi.SSID());
-
-//   // print your WiFi shield's IP address:
-//   ip = WiFi.localIP();
-//   Serial.print("IP Address: ");
-//   Serial.println(ip);
-
-//   // print the received signal strength:
-//   long rssi = WiFi.RSSI();
-//   Serial.print("signal strength (RSSI):");
-//   Serial.print(rssi);
-//   Serial.println(" dBm");
-//   // print where to go in a browser:
-//   Serial.print("Open http://");
-//   Serial.println(ip);
-// }

@@ -115,25 +115,111 @@
     <input type="text" id="var2" placeholder="Enter value for Injection End RPM">
     <button onclick="updateEndRPM()">Update End RPM</button>
   </div>
+  <div class="flex-container">
+    <h4>Enter Values:</h4>
+    <input type="text" id="key_3000" placeholder="Enter value for key_3000" onchange="updateDemand('key_3000')">
+    <input type="text" id="key_3500" placeholder="Enter value for key_3500" onchange="updateDemand('key_3500')">
+    <input type="text" id="key_4000" placeholder="Enter value for key_4000" onchange="updateDemand('key_4000')">
+    <input type="text" id="key_4500" placeholder="Enter value for key_4500" onchange="updateDemand('key_4500')">
+    <input type="text" id="key_5000" placeholder="Enter value for key_5000" onchange="updateDemand('key_5000')">
+    <input type="text" id="key_5500" placeholder="Enter value for key_5500" onchange="updateDemand('key_5500')">
+    <input type="text" id="key_6000" placeholder="Enter value for key_6000" onchange="updateDemand('key_6000')">
+    <input type="text" id="key_6500" placeholder="Enter value for key_6500" onchange="updateDemand('key_6500')">
+    <input type="text" id="key_7000" placeholder="Enter value for key_7000" onchange="updateDemand('key_7000')">
+    <button onclick="submitDemands()">Submit Data</button>
+  </div>
   <script>
+    var injectionDemands = {
+      "key_3000": null,
+      "key_3500": null,
+      "key_4000": null,
+      "key_4500": null,
+      "key_5000": null,
+      "key_5500": null,
+      "key_6000": null,
+      "key_6500": null,
+      "key_7000": null,
+    };
 
-    // Define the number of outputs
     var numOutputs = 4;
 
-    window.onload = function () {
+    function updateDemand(key){
+      console.log(key)
+      let value = document.getElementById(key).value;
+      console.log("The val: ", value)
+      if (!Number.isInteger(Number(value))) {
+        alert("Must be integer")
+        return;
+      }
+      injectionDemands[key] = Number(value)
+      console.log(injectionDemands)
+    }
+
+    function submitDemands() {
+      console.log("User data to be sent to server: ", injectionDemands);
+
       let xhr = new XMLHttpRequest();
-      xhr.open("GET", "/getOutputStates", true);
+      xhr.open("POST", "/updateDemands", true);
+      xhr.setRequestHeader("Content-Type", "application/json");
+
       xhr.onload = function () {
-        if (xhr.status == 200) {
-          let relayStates = JSON.parse(xhr.responseText);
+      if (xhr.status == 200) {
+        alert("Data successfully sent to the server.");
+      } else {
+        alert("Failed to send data. Error: " + xhr.status);
+      }
+      };
+
+      xhr.onerror = function () {
+        alert("Request failed.");
+      };
+
+      xhr.send(JSON.stringify(injectionDemands));
+    }
+
+    window.onload = function () {
+      // first request, get the state of the outputs
+      let xhr1 = new XMLHttpRequest();
+      xhr1.open("GET", "/getOutputStates", true);
+      xhr1.onload = function () {
+        if (xhr1.status == 200) {
+          let relayStates = JSON.parse(xhr1.responseText);
           for (let i = 0; i < numOutputs; i++) {
             let checkbox = document.getElementById(i);
             checkbox.checked = relayStates[i.toString()] === "HIGH";
           }
         }
       };
-      xhr.send();
+      xhr1.send();
+
+      // second request get the state of the injection setpoints
+      let xhr2 = new XMLHttpRequest();
+      xhr2.open("GET", "/getInjectionDemands", true);
+
+      xhr2.onload = function () {
+        if (xhr2.status == 200) {
+          let demandVals = JSON.parse(xhr2.responseText);
+          let demandKeys = ["key_3000", "key_3500", "key_4000", "key_4500", "key_5000", "key_5500", "key_6000", "key_6500", "key_7000"]
+
+          demandKeys.forEach((key) => {
+            let input = document.getElementById(key);
+            if (input && demandVals.hasOwnProperty(key)) {
+              input.placeholder = `Current ${demandVals[key]}`;
+              injectionDemands[key] = demandVals[key];
+            }
+          });
+        } else {
+              console.log("Failed to load data")
+            }
+      }
+      xhr2.onerror = function () {
+        console.log("Request Failed")
+      };
+        
+      xhr2.send();
     }
+
+
 
     function toggleCheckbox(element) {
       console.log("checkbox toggled")
