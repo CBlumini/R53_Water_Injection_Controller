@@ -52,7 +52,7 @@ int outState = LOW;
 struct SpeedDemandStruct {
   int speed;
   int speedMult;
-  int dutyCylce;
+  int dutyCycle;
   int demand;
 };
 
@@ -206,55 +206,129 @@ const char index_html[] PROGMEM = R"rawliteral(
       <span class="slider">
       </span>
     </label>
-    <br>
-    <input type="text" id="var1" placeholder="Enter value for Injection Start RPM">
-    <button onclick="updateStartRPM()">Update Start RPM</button>
-    <br>
-    <input type="text" id="var2" placeholder="Enter value for Injection End RPM">
-    <button onclick="updateEndRPM()">Update End RPM</button>
   </div>
   <div class="flex-container">
-    <h4>Enter Values:</h4>
-    <input type="text" id="key_3000" placeholder="Enter value for key_3000" onchange="updateDemand('key_3000')">
-    <input type="text" id="key_3500" placeholder="Enter value for key_3500" onchange="updateDemand('key_3500')">
-    <input type="text" id="key_4000" placeholder="Enter value for key_4000" onchange="updateDemand('key_4000')">
-    <input type="text" id="key_4500" placeholder="Enter value for key_4500" onchange="updateDemand('key_4500')">
-    <input type="text" id="key_5000" placeholder="Enter value for key_5000" onchange="updateDemand('key_5000')">
-    <input type="text" id="key_5500" placeholder="Enter value for key_5500" onchange="updateDemand('key_5500')">
-    <input type="text" id="key_6000" placeholder="Enter value for key_6000" onchange="updateDemand('key_6000')">
-    <input type="text" id="key_6500" placeholder="Enter value for key_6500" onchange="updateDemand('key_6500')">
-    <input type="text" id="key_7000" placeholder="Enter value for key_7000" onchange="updateDemand('key_7000')">
-    <button onclick="submitDemands()">Submit Data</button>
+    <h4>Enter Speed, Duty Cycle and Demand Values:</h4>
+    <h5> The speed is first checked where a multiplier factor is applied then
+      the injector duty cycle is checked and the output value is multiplied by the 
+      speed multiplier
+    </h5>
+
+    <div style="display: flex;">
+      <div>
+        <h5>Speed Values</h5>
+        <input type="text" id="sp1" placeholder="Enter speed value" onchange="updateSpeed('1')">
+        <input type="text" id="sp2" placeholder="Enter speed value" onchange="updateSpeed('2')">
+        <input type="text" id="sp3" placeholder="Enter speed value" onchange="updateSpeed('3')">
+        <input type="text" id="sp4" placeholder="Enter speed value" onchange="updateSpeed('4')">
+        <input type="text" id="sp5" placeholder="Enter speed value" onchange="updateSpeed('5')">
+        <input type="text" id="sp6" placeholder="Enter speed value" onchange="updateSpeed('6')">
+        <input type="text" id="sp7" placeholder="Enter speed value" onchange="updateSpeed('7')">
+        <input type="text" id="sp8" placeholder="Enter speed value" onchange="updateSpeed('8')">
+        <input type="text" id="sp9" placeholder="Enter speed value" onchange="updateSpeed('9')">
+      </div>
+      <div>
+        <h5>Speed Multipliers</h5>
+        <input type="text" id="spm1" placeholder="Enter speed mult value" onchange="updateSpeedMult('1')">
+        <input type="text" id="spm2" placeholder="Enter speed mult value" onchange="updateSpeedMult('2')">
+        <input type="text" id="spm3" placeholder="Enter speed mult value" onchange="updateSpeedMult('3')">
+        <input type="text" id="spm4" placeholder="Enter speed mult value" onchange="updateSpeedMult('4')">
+        <input type="text" id="spm5" placeholder="Enter speed mult value" onchange="updateSpeedMult('5')">
+        <input type="text" id="spm6" placeholder="Enter speed mult value" onchange="updateSpeedMult('6')">
+        <input type="text" id="spm7" placeholder="Enter speed mult value" onchange="updateSpeedMult('7')">
+        <input type="text" id="spm8" placeholder="Enter speed mult value" onchange="updateSpeedMult('8')">
+        <input type="text" id="spm9" placeholder="Enter speed mult value" onchange="updateSpeedMult('9')">
+      </div>
+      <div>
+        <h5>Duty Cycle Values</h5>
+        <input type="text" id="dc1" placeholder="Enter speed value" onchange="updateDuty('1')">
+        <input type="text" id="dc2" placeholder="Enter speed value" onchange="updateDuty('2')">
+        <input type="text" id="dc3" placeholder="Enter speed value" onchange="updateDuty('3')">
+        <input type="text" id="dc4" placeholder="Enter speed value" onchange="updateDuty('4')">
+        <input type="text" id="dc5" placeholder="Enter speed value" onchange="updateDuty('5')">
+        <input type="text" id="dc6" placeholder="Enter speed value" onchange="updateDuty('6')">
+        <input type="text" id="dc7" placeholder="Enter speed value" onchange="updateDuty('7')">
+        <input type="text" id="dc8" placeholder="Enter speed value" onchange="updateDuty('8')">
+        <input type="text" id="dc9" placeholder="Enter speed value" onchange="updateDuty('9')">
+      </div>
+      <div style="margin-right: 10px;">
+      <h5> Methanol Values </h5>
+        <input type="text" id="mo1" placeholder="Enter value for break point" onchange="updateMethanol('1')">
+        <input type="text" id="mo2" placeholder="Enter value for break point" onchange="updateMethanol('2')">
+        <input type="text" id="mo3" placeholder="Enter value for break point" onchange="updateMethanol('3')">
+        <input type="text" id="mo4" placeholder="Enter value for break point" onchange="updateMethanol('4')">
+        <input type="text" id="mo5" placeholder="Enter value for break point" onchange="updateMethanol('5')">
+        <input type="text" id="mo6" placeholder="Enter value for break point" onchange="updateMethanol('6')">
+        <input type="text" id="mo7" placeholder="Enter value for break point" onchange="updateMethanol('7')">
+        <input type="text" id="mo8" placeholder="Enter value for break point" onchange="updateMethanol('8')">
+        <input type="text" id="mo9" placeholder="Enter value for break point" onchange="updateMethanol('9')">
+      </div>
+
+    </div>
+    <button onclick="submitData()">Submit Data</button>
   </div>
   <script>
-    var injectionDemands = {
-      "key_3000": null,
-      "key_3500": null,
-      "key_4000": null,
-      "key_4500": null,
-      "key_5000": null,
-      "key_5500": null,
-      "key_6000": null,
-      "key_6500": null,
-      "key_7000": null,
+
+    var dataPoints = {
+      "breakpoint1": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakpoint2": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakpoint3": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakpoint4": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakpoint5": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakpoint6": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakpoint7": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakpoint8": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakpoint9": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
     };
 
     var numOutputs = 4;
 
-    function updateDemand(key){
-      console.log(key)
-      let value = document.getElementById(key).value;
-      console.log("The val: ", value)
+    function updateSpeed(breakpoint){
+      let value = Number(document.getElementById("sp"+breakpoint).value);
       if (!Number.isInteger(Number(value))) {
         alert("Must be integer")
         return;
       }
-      injectionDemands[key] = Number(value)
-      console.log(injectionDemands)
+      //TODO: add check for less than 100
+      //TODO: add check for 0 or greater
+      dataPoints["breakpoint"+breakpoint].speed = value
     }
 
-    function submitDemands() {
-      console.log("User data to be sent to server: ", injectionDemands);
+    function updateSpeedMult(breakpoint){
+      let value = Number(document.getElementById("spm"+breakpoint).value);
+      if (!Number.isInteger(Number(value))) {
+        alert("Must be integer")
+        return;
+      }
+      //TODO: add check for less than 100
+      //TODO: add check for 0 or greater
+      dataPoints["breakpoint"+breakpoint].speedMultiplier = value
+    }
+
+    function updateDuty(breakpoint){
+      let value = Number(document.getElementById("dc"+breakpoint).value);
+      if (!Number.isInteger(Number(value))) {
+        alert("Must be integer")
+        return;
+      }
+      //TODO: add check for less than 100
+      //TODO: add check for 0 or greater
+      dataPoints["breakpoint"+breakpoint].dutyCycle = value
+    }
+
+    function updateMethanol(breakpoint){
+      let value = Number(document.getElementById("dp"+breakpoint).value);
+      if (!Number.isInteger(Number(value))) {
+        alert("Must be integer")
+        return;
+      }
+      //TODO: add check for less than 100
+      //TODO: add check for 0 or greater
+      dataPoints["breakpoint"+breakpoint].methanol = value
+    }
+
+    function submitData() {
+      console.log("User data to be sent to server: ", dataPoints);
 
       let xhr = new XMLHttpRequest();
       xhr.open("POST", "/updateDemands", true);
@@ -272,7 +346,7 @@ const char index_html[] PROGMEM = R"rawliteral(
         alert("Request failed.");
       };
 
-      xhr.send(JSON.stringify(injectionDemands));
+      xhr.send(JSON.stringify(dataPoints));
     }
 
     window.onload = function () {
@@ -402,6 +476,10 @@ void printMap() {
     }
 }
 
+// void printJson(JsonObject){
+//   for (JsonObject::iterator it = doc.begin())
+// }
+
 //////////////// END SUPPORT FUNCTIONS //////////////////
 
 Preferences preferences;
@@ -516,30 +594,59 @@ server.on("/updateDemands", HTTP_POST, [](AsyncWebServerRequest *request) {}, NU
 
     JsonObject obj = doc.as<JsonObject>();
 
-    // update the active map
-    for(JsonPair speedDemandPair : obj) {
-      Serial.println(speedDemandPair.key().c_str());
-      Serial.println(speedDemandPair.value().as<int>());
+    const char* breakPointTemp;
+    int speedTemp = 0;
+    int speedMultTemp = 0;
+    int dutyCylceTemp = 0;
+    int methTemp = 0;
 
-      // get the key and value
-      const char* breakPoint = speedDemandPair.key().c_str();
-      int demand = speedDemandPair.value().as<int>();
 
-      demandMap[breakPoint].demand = demand;
+    // PRINT ALL THE DATA
+    for(JsonPair breakPointPair : obj) {
+      breakPointTemp = breakPointPair.key().c_str();
+      Serial.println(breakPointTemp);
+      JsonObject breakPoint = breakPointPair.value().as<JsonObject>();
+      SpeedDemandStruct &demandStruct = demandMap[breakPointTemp];
+
+      for (JsonPair keyVal : breakPoint) {
+        int value = keyVal.value().as<int>();
+        Serial.print(keyVal.key().c_str());
+        Serial.print(": ");
+        Serial.println(value);
+
+        if (keyVal.key() == "speed") {
+          demandStruct.speed = value;
+        }
+        else if (keyVal.key() == "speedMultiplier") {
+          demandStruct.speedMult = value;
+        }
+        else if (keyVal.key() == "dutyCycle") {
+          demandStruct.dutyCycle = value;
+        }
+        else if (keyVal.key() == "dutyCycle") {
+          demandStruct.dutyCycle = value;
+        }
+      }
+
+      // // get the key and value
+      // const char* breakPoint = speedDemandPair.key().c_str();
+      // int demand = speedDemandPair.value().as<int>();
+
+      // demandMap[breakPoint].demand = demand;
     };
 
     // update the preference values
-    std::string breakPointStoreSpeed = "";
-    std::string breakPointStoreDemand = "";
-    for (auto const& pair: demandMap) {
-      breakPointStoreSpeed = "speed" + pair.first;
-      breakPointStoreDemand = "demand" + pair.first;
-      preferences.putInt(breakPointStoreSpeed.c_str(), pair.second.speed);
-      preferences.putInt(breakPointStoreDemand.c_str(), pair.second.demand);
+    // std::string breakPointStoreSpeed = "";
+    // std::string breakPointStoreDemand = "";
+    // for (auto const& pair: demandMap) {
+    //   breakPointStoreSpeed = "speed" + pair.first;
+    //   breakPointStoreDemand = "demand" + pair.first;
+    //   preferences.putInt(breakPointStoreSpeed.c_str(), pair.second.speed);
+    //   preferences.putInt(breakPointStoreDemand.c_str(), pair.second.demand);
 
-    }
-    printMap();
-    preferences.end();
+    // }
+    // printMap();
+    // preferences.end();
 
   });
 
