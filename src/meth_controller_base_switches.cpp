@@ -51,19 +51,21 @@ int outState = LOW;
 
 struct SpeedDemandStruct {
   int speed;
+  int speedMult;
+  int dutyCylce;
   int demand;
 };
 
 std::map<std::string, SpeedDemandStruct> demandMap = {
-  {"key_3000", {3000, 0}},
-  {"key_3500", {3500, 0}},
-  {"key_4000", {4000, 0}},
-  {"key_4500", {4500, 0}},
-  {"key_5000", {5000, 0}},
-  {"key_5500", {5500, 0}},
-  {"key_6000", {6000, 0}},
-  {"key_6500", {6500, 0}},
-  {"key_7000", {7000, 0}}
+  {"breakPoint1", {3000, 1, 100, 0}},
+  {"breakPoint2", {3500, 1, 100, 0}},
+  {"breakPoint3", {4000, 1, 100, 0}},
+  {"breakPoint4", {4500, 1, 100, 0}},
+  {"breakPoint5", {5000, 1, 100, 0}},
+  {"breakPoint6", {5500, 1, 100, 0}},
+  {"breakPoint7", {6000, 1, 100, 0}},
+  {"breakPoint8", {6500, 1, 100, 0}},
+  {"breakPoint9", {7000, 1, 100, 0}}
 };
 
 
@@ -451,8 +453,6 @@ void setup()
   pinMode(valvePin, OUTPUT);
   pinMode(pumpRelayPin, OUTPUT);
   pinMode(spareOutputPin, OUTPUT);
- 
-  
 
   ///////////////SETUP ROUTES////////////
   // Route for root / web page
@@ -471,44 +471,6 @@ void setup()
 
     Serial.println(relayId + relayState);
     request->send(200, "text/plain", "OK"); });
-
-  server.on("/updateStartRPM", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-  if (request->hasParam("startRPM")) {
-    // open up preferences
-    preferences.begin("my-app", false);
-
-    // get the value from the web request and store
-    int injectionStartRPM; 
-    injectionStartRPM = request->getParam("startRPM")->value().toInt();
-    Serial.println("Injection Start RPM is: " + String(injectionStartRPM));
-    preferences.putInt("startRPM", injectionStartRPM);
-
-    // retreive the int for testing purposes
-    Serial.println(preferences.getInt("startRPM", 0));
-
-    // close preferences
-    preferences.end();
-
-  }
-  request->send(200, "text/plain", String(injectionStartRPM)); });
-
-  server.on("/updateEndRPM", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-  if (request->hasParam("endRPM")) {
-    // open preferences
-    preferences.begin("my-app", false);
-    
-    // get the vale from the web request and store
-    int injectionEndRPM;
-    injectionEndRPM = request->getParam("endRPM")->value().toInt();
-    Serial.println("Injection End RPM is: " + String(injectionEndRPM));
-    preferences.putInt("endRPM", injectionEndRPM);
-
-    // retrieve for testing purposes
-    Serial.println(Serial.println(preferences.getInt("endRPM", 0)));
-  }
-  request->send(200, "text/plain", String(injectionEndRPM)); });
 
 
   server.on("/getOutputStates", HTTP_GET, [](AsyncWebServerRequest *request)

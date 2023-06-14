@@ -108,28 +108,15 @@
       <span class="slider">
       </span>
     </label>
-    <br>
-    <input type="text" id="var1" placeholder="Enter value for Injection Start RPM">
-    <button onclick="updateStartRPM()">Update Start RPM</button>
-    <br>
-    <input type="text" id="var2" placeholder="Enter value for Injection End RPM">
-    <button onclick="updateEndRPM()">Update End RPM</button>
   </div>
   <div class="flex-container">
-    <h4>Enter Speed and Demand Values:</h4>
+    <h4>Enter Speed, Duty Cycle and Demand Values:</h4>
+    <h5> The speed is first checked where a multiplier factor is applied then
+      the injector duty cycle is checked and the output value is multiplied by the 
+      speed multiplier
+    </h5>
+
     <div style="display: flex;">
-      <div style="margin-right: 10px;">
-      <h5> Demand Values </h5>
-        <input type="text" id="dp1" placeholder="Enter value for break point" onchange="updateDemand('1')">
-        <input type="text" id="dp2" placeholder="Enter value for break point" onchange="updateDemand('2')">
-        <input type="text" id="dp3" placeholder="Enter value for break point" onchange="updateDemand('3')">
-        <input type="text" id="dp4" placeholder="Enter value for break point" onchange="updateDemand('4')">
-        <input type="text" id="dp5" placeholder="Enter value for break point" onchange="updateDemand('5')">
-        <input type="text" id="dp6" placeholder="Enter value for break point" onchange="updateDemand('6')">
-        <input type="text" id="dp7" placeholder="Enter value for break point" onchange="updateDemand('7')">
-        <input type="text" id="dp8" placeholder="Enter value for break point" onchange="updateDemand('8')">
-        <input type="text" id="dp9" placeholder="Enter value for break point" onchange="updateDemand('9')">
-      </div>
       <div>
         <h5>Speed Values</h5>
         <input type="text" id="sp1" placeholder="Enter speed value" onchange="updateSpeed('1')">
@@ -142,59 +129,61 @@
         <input type="text" id="sp8" placeholder="Enter speed value" onchange="updateSpeed('8')">
         <input type="text" id="sp9" placeholder="Enter speed value" onchange="updateSpeed('9')">
       </div>
+      <div>
+        <h5>Speed Multipliers</h5>
+        <input type="text" id="spm1" placeholder="Enter speed mult value" onchange="updateSpeedMult('1')">
+        <input type="text" id="spm2" placeholder="Enter speed mult value" onchange="updateSpeedMult('2')">
+        <input type="text" id="spm3" placeholder="Enter speed mult value" onchange="updateSpeedMult('3')">
+        <input type="text" id="spm4" placeholder="Enter speed mult value" onchange="updateSpeedMult('4')">
+        <input type="text" id="spm5" placeholder="Enter speed mult value" onchange="updateSpeedMult('5')">
+        <input type="text" id="spm6" placeholder="Enter speed mult value" onchange="updateSpeedMult('6')">
+        <input type="text" id="spm7" placeholder="Enter speed mult value" onchange="updateSpeedMult('7')">
+        <input type="text" id="spm8" placeholder="Enter speed mult value" onchange="updateSpeedMult('8')">
+        <input type="text" id="spm9" placeholder="Enter speed mult value" onchange="updateSpeedMult('9')">
+      </div>
+      <div>
+        <h5>Duty Cycle Values</h5>
+        <input type="text" id="dc1" placeholder="Enter speed value" onchange="updateDuty('1')">
+        <input type="text" id="dc2" placeholder="Enter speed value" onchange="updateDuty('2')">
+        <input type="text" id="dc3" placeholder="Enter speed value" onchange="updateDuty('3')">
+        <input type="text" id="dc4" placeholder="Enter speed value" onchange="updateDuty('4')">
+        <input type="text" id="dc5" placeholder="Enter speed value" onchange="updateDuty('5')">
+        <input type="text" id="dc6" placeholder="Enter speed value" onchange="updateDuty('6')">
+        <input type="text" id="dc7" placeholder="Enter speed value" onchange="updateDuty('7')">
+        <input type="text" id="dc8" placeholder="Enter speed value" onchange="updateDuty('8')">
+        <input type="text" id="dc9" placeholder="Enter speed value" onchange="updateDuty('9')">
+      </div>
+      <div style="margin-right: 10px;">
+      <h5> Methanol Values </h5>
+        <input type="text" id="mo1" placeholder="Enter value for break point" onchange="updateMethanol('1')">
+        <input type="text" id="mo2" placeholder="Enter value for break point" onchange="updateMethanol('2')">
+        <input type="text" id="mo3" placeholder="Enter value for break point" onchange="updateMethanol('3')">
+        <input type="text" id="mo4" placeholder="Enter value for break point" onchange="updateMethanol('4')">
+        <input type="text" id="mo5" placeholder="Enter value for break point" onchange="updateMethanol('5')">
+        <input type="text" id="mo6" placeholder="Enter value for break point" onchange="updateMethanol('6')">
+        <input type="text" id="mo7" placeholder="Enter value for break point" onchange="updateMethanol('7')">
+        <input type="text" id="mo8" placeholder="Enter value for break point" onchange="updateMethanol('8')">
+        <input type="text" id="mo9" placeholder="Enter value for break point" onchange="updateMethanol('9')">
+      </div>
+
     </div>
     <button onclick="submitData()">Submit Data</button>
   </div>
   <script>
-    // var injectionDemands = {
-    //   "dp1": 0,
-    //   "dp2": 0,
-    //   "dp3": 0,
-    //   "dp4": 0,
-    //   "dp5": 0,
-    //   "dp6": 0,
-    //   "dp7": 0,
-    //   "dp8": 0,
-    //   "dp9": 0,
-    // };
-
-    // var speedValues = {
-    //   "sp1": 0,
-    //   "sp2": 0,
-    //   "sp3": 0,
-    //   "sp4": 0,
-    //   "sp5": 0,
-    //   "sp6": 0,
-    //   "sp7": 0,
-    //   "sp8": 0,
-    //   "sp9": 0,
-    // };
 
     var dataPoints = {
-      "breakpoint1": {speed: 0, demand: 0},
-      "breakpoint2": {speed: 0, demand: 0},
-      "breakpoint3": {speed: 0, demand: 0},
-      "breakpoint4": {speed: 0, demand: 0},
-      "breakpoint5": {speed: 0, demand: 0},
-      "breakpoint6": {speed: 0, demand: 0},
-      "breakpoint7": {speed: 0, demand: 0},
-      "breakpoint8": {speed: 0, demand: 0},
-      "breakpoint9": {speed: 0, demand: 0},
+      "breakpoint1": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakpoint2": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakpoint3": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakpoint4": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakpoint5": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakpoint6": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakpoint7": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakpoint8": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakpoint9": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
     };
 
     var numOutputs = 4;
-
-    function updateDemand(breakpoint){
-      let value = Number(document.getElementById("dp"+breakpoint).value);
-      if (!Number.isInteger(Number(value))) {
-        alert("Must be integer")
-        return;
-      }
-      //TODO: add check for less than 100
-      //TODO: add check for 0 or greater
-      dataPoints["breakpoint"+breakpoint].demand = value
-    }
-
 
     function updateSpeed(breakpoint){
       let value = Number(document.getElementById("sp"+breakpoint).value);
@@ -205,6 +194,39 @@
       //TODO: add check for less than 100
       //TODO: add check for 0 or greater
       dataPoints["breakpoint"+breakpoint].speed = value
+    }
+
+    function updateSpeedMult(breakpoint){
+      let value = Number(document.getElementById("spm"+breakpoint).value);
+      if (!Number.isInteger(Number(value))) {
+        alert("Must be integer")
+        return;
+      }
+      //TODO: add check for less than 100
+      //TODO: add check for 0 or greater
+      dataPoints["breakpoint"+breakpoint].speedMultiplier = value
+    }
+
+    function updateDuty(breakpoint){
+      let value = Number(document.getElementById("dc"+breakpoint).value);
+      if (!Number.isInteger(Number(value))) {
+        alert("Must be integer")
+        return;
+      }
+      //TODO: add check for less than 100
+      //TODO: add check for 0 or greater
+      dataPoints["breakpoint"+breakpoint].dutyCycle = value
+    }
+
+    function updateMethanol(breakpoint){
+      let value = Number(document.getElementById("dp"+breakpoint).value);
+      if (!Number.isInteger(Number(value))) {
+        alert("Must be integer")
+        return;
+      }
+      //TODO: add check for less than 100
+      //TODO: add check for 0 or greater
+      dataPoints["breakpoint"+breakpoint].methanol = value
     }
 
     function submitData() {
