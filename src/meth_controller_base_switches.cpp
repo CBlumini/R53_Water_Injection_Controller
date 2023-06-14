@@ -53,7 +53,7 @@ struct SpeedDemandStruct {
   int speed;
   int speedMult;
   int dutyCycle;
-  int demand;
+  int methanol;
 };
 
 std::map<std::string, SpeedDemandStruct> demandMap = {
@@ -471,8 +471,12 @@ void printMap() {
         Serial.print(pair.first.c_str());
         Serial.print(" Speed: ");
         Serial.print(pair.second.speed);
-        Serial.print(" Demand: ");
-        Serial.println(pair.second.demand);
+        Serial.print(" SpeedMult: ");
+        Serial.print(pair.second.speedMult);
+        Serial.print(" Duty: ");
+        Serial.print(pair.second.dutyCycle);
+        Serial.print(" Meth: ");
+        Serial.println(pair.second.methanol);
     }
 }
 
@@ -627,26 +631,26 @@ server.on("/updateDemands", HTTP_POST, [](AsyncWebServerRequest *request) {}, NU
           demandStruct.dutyCycle = value;
         }
       }
-
-      // // get the key and value
-      // const char* breakPoint = speedDemandPair.key().c_str();
-      // int demand = speedDemandPair.value().as<int>();
-
-      // demandMap[breakPoint].demand = demand;
     };
 
     // update the preference values
-    // std::string breakPointStoreSpeed = "";
-    // std::string breakPointStoreDemand = "";
-    // for (auto const& pair: demandMap) {
-    //   breakPointStoreSpeed = "speed" + pair.first;
-    //   breakPointStoreDemand = "demand" + pair.first;
-    //   preferences.putInt(breakPointStoreSpeed.c_str(), pair.second.speed);
-    //   preferences.putInt(breakPointStoreDemand.c_str(), pair.second.demand);
+    std::string breakPointStoreSpeed = "";
+    std::string breakPointStoreSpeedMult = "";
+    std::string breakPointStoreDuty = "";
+    std::string breakPointStoreMethanol = "";
+    for (auto const& pair: demandMap) {
+      breakPointStoreSpeed = "speed" + pair.first;
+      breakPointStoreSpeedMult = "speedMult" + pair.first;
+      breakPointStoreDuty = "duty" + pair.first;
+      breakPointStoreMethanol = "methanol" + pair.first;
+      preferences.putInt(breakPointStoreSpeed.c_str(), pair.second.speed);
+      preferences.putInt(breakPointStoreSpeedMult.c_str(), pair.second.speed);
+      preferences.putInt(breakPointStoreDuty.c_str(), pair.second.speed);
+      preferences.putInt(breakPointStoreMethanol.c_str(), pair.second.methanol);
 
-    // }
-    // printMap();
-    // preferences.end();
+    }
+    printMap();
+    preferences.end();
 
   });
 
