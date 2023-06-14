@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <map>
+#include <string>
 #include "WiFi.h"
 #include "ESPAsyncWebServer.h"
 #include <secrets.h>
@@ -34,7 +35,6 @@ IPAddress actualIP;
 AsyncWebServer server(80);
 
 int actuatorOutputs[] = {ledPin, valvePin, pumpRelayPin, spareOutputPin};
-int sensorInput[] = {pushToInjectPin, flowMeterPin, injectorDutyPin, spareInputPin};
 
 int injectionStartRPM = 0;
 int injectionEndRPM = 0;
@@ -554,6 +554,7 @@ server.on("/updateDemands", HTTP_POST, [](AsyncWebServerRequest *request) {}, NU
 
     JsonObject obj = doc.as<JsonObject>();
 
+    // update the active map
     for(JsonPair speedDemandPair : obj) {
       Serial.println(speedDemandPair.key().c_str());
       Serial.println(speedDemandPair.value().as<int>());
@@ -563,8 +564,18 @@ server.on("/updateDemands", HTTP_POST, [](AsyncWebServerRequest *request) {}, NU
       int demand = speedDemandPair.value().as<int>();
 
       demandMap[breakPoint].demand = demand;
-
     };
+
+    // update the preference values
+    std::string breakPointStoreSpeed = "";
+    std::string breakPointStoreDemand = "";
+    for (auto const& pair: demandMap) {
+      breakPointStoreSpeed = "speed" + pair.first;
+      breakPointStoreDemand = "demand" + pair.first;
+      preferences.putInt(breakPointStoreSpeed.c_str(), pair.second.speed);
+      preferences.putInt(breakPointStoreDemand.c_str(), pair.second.demand);
+
+    }
     printMap();
     preferences.end();
 

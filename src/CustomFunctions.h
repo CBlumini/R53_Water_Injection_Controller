@@ -10,11 +10,4 @@ void cycleOutput(int cycleTime, int output, bool outputToggle);
 void setFlags(int relayId, int relayState);
 int interpolateValues(int val, int* xMapVals, int* yMapVals, uint8_t size);
 
-// void setStartRPM(int startRPM);
-// int getStartRPM();
-
-// void setEndRPM(int endRPM);
-// int getEndRPM();
-
-
 #endif // MY_FUNCTIONS_H
