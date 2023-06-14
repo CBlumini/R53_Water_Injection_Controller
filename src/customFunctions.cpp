@@ -92,4 +92,11 @@ void setFlags(int relayId, int relayState) {
       }
 }
 
-
+int interpolateVaules(int val, int* xMapVals, int* yMapVals, uint8_t size) {
+    if (val <= xMapVals[0]) return yMapVals[0];
+    if (val >= xMapVals[size - 1]) return yMapVals[size - 1];
+    uint8_t pos = 1;
+    while (val > xMapVals[pos]) pos++;
+    if (val == xMapVals[pos]) return yMapVals[pos];
+    return (val - xMapVals[pos - 1]) * (yMapVals[pos] - yMapVals[pos - 1]) / (xMapVals[pos] - xMapVals[pos - 1]) + yMapVals[pos - 1];
+}
