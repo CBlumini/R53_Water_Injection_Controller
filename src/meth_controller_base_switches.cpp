@@ -675,6 +675,10 @@ void loop()
   cycleOutput(1000, valvePin, outputFlag1);
   cycleOutput(1000, pumpRelayPin, outputFlag2);
 
+  //TODO: Implement simple voltage check
+  //TODO: Implement pump actuation (lowest speed breakpoint with meth demand -100rpm)
+  //TODO: Implement duty cycle read
+  //TODO: Implement valve output
 };
 
 
