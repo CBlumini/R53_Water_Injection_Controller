@@ -1,6 +1,7 @@
+#include <Arduino.h>
+#include <map>
 #include "WiFi.h"
 #include "ESPAsyncWebServer.h"
-#include <Arduino.h>
 #include <secrets.h>
 #include <ArduinoJson.h>
 #include <Preferences.h>
@@ -48,20 +49,46 @@ unsigned long currentTime = 0;
 unsigned long prevTime = 0;
 int outState = LOW;
 
-struct Values {
-    int key_3000 = 0;
-    int key_3500 = 0;
-    int key_4000 = 0;
-    int key_4500 = 0;
-    int key_5000 = 0;
-    int key_5500 = 0;
-    int key_6000 = 0;
-    int key_6500 = 0;
-    int key_7000 = 0;
+struct SpeedDemandStruct {
+  int speed;
+  int demand;
+};
+
+std::map<std::string, SpeedDemandStruct> demandMap = {
+  {"key_3000", {3000, 0}},
+  {"key_3500", {3500, 0}},
+  {"key_4000", {4000, 0}},
+  {"key_4500", {4500, 0}},
+  {"key_5000", {5000, 0}},
+  {"key_5500", {5500, 0}},
+  {"key_6000", {6000, 0}},
+  {"key_6500", {6500, 0}},
+  {"key_7000", {7000, 0}}
 };
 
 
-// PreferencesManager prefMan;
+// // Access value
+// int value = demandMap["key_3000"];
+// // Modify value
+// demandMap["key_3000"] = 100;
+
+// struct ValueStruct {
+//     int value1;
+//     int value2;
+// };
+
+// std::map<std::string, ValueStruct> myMap;
+
+// myMap["key_3000"] = {3000, 0};
+
+// // Accessing the values
+// int firstValue = myMap["key_3000"].value1;
+// int secondValue = myMap["key_3000"].value2;
+
+// // Modifying the values
+// myMap["key_3000"].value1 = 4000;
+// myMap["key_3000"].value2 = 100;
+
 
 
 ///////////////////////// WEB PAGE CODE ///////////////////
@@ -361,6 +388,20 @@ const char index_html[] PROGMEM = R"rawliteral(
 // I think I got this code from the wifi example
 
 
+////////////////// SUPPORT FUNCTIONS AND CLASS DECLARATIONS///////////
+void printMap() {
+    for (auto const& pair: demandMap) {
+        Serial.print("Key: ");
+        Serial.print(pair.first.c_str());
+        Serial.print(" Speed: ");
+        Serial.print(pair.second.speed);
+        Serial.print(" Demand: ");
+        Serial.println(pair.second.demand);
+    }
+}
+
+//////////////// END SUPPORT FUNCTIONS //////////////////
+
 Preferences preferences;
 void setup()
 {
@@ -496,6 +537,7 @@ void setup()
 
 server.on("/updateDemands", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) 
   {
+    preferences.begin("my-app", false);
     DynamicJsonDocument doc(1024);
     DeserializationError error = deserializeJson(doc, data);
     if (error) {
@@ -512,35 +554,35 @@ server.on("/updateDemands", HTTP_POST, [](AsyncWebServerRequest *request) {}, NU
 
     JsonObject obj = doc.as<JsonObject>();
 
-    for(JsonPair p : obj) {
-      Serial.println(p.key().c_str());
-      Serial.println(p.value().as<int>());
+    for(JsonPair speedDemandPair : obj) {
+      Serial.println(speedDemandPair.key().c_str());
+      Serial.println(speedDemandPair.value().as<int>());
 
-      // Values[]
+      // get the key and value
+      const char* breakPoint = speedDemandPair.key().c_str();
+      int demand = speedDemandPair.value().as<int>();
+
+      demandMap[breakPoint].demand = demand;
+
     };
-
-
-
-    // Serial.println("Post triggered");
-    // int params = request->params();
-    // Serial.println(params);
-    // for (int i=0; i<params; i++){
-    //   Serial.println(i);
-    //   AsyncWebParameter* p = request->getParam(i);
-    //   if(p->isPost()){
-    //     Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
-
-    //   }
-    // }
-    // request->send(200, "text/plain", "Data received");
+    printMap();
+    preferences.end();
 
   });
+
+  // might make sense to do this
+  // 1 validate numbers
+  // 2 save to prefs
+  // 3 trigger a fucntion that loads preferences
+  // 4 reuse that same function to load the prefs on startup
+  // Note: don't seriously need a function to write because that should only ever be modified due to this post request
 
 
 // Start server
 server.begin();
 
-}
+};
+////////////// END MAIN SETUP CODE /////////////////
 
 
 void loop()
@@ -549,5 +591,39 @@ void loop()
   cycleOutput(1000, valvePin, outputFlag1);
   cycleOutput(1000, pumpRelayPin, outputFlag2);
 
-}
+};
 
+
+
+
+
+// server.on("/updateDemands", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+//   DynamicJsonDocument doc(1024);
+//   DeserializationError error = deserializeJson(doc, data);
+//   if (error) {
+//     Serial.print(F("deserializeJson() failed: "));
+//     Serial.println(error.f_str());
+//     return;
+//   }
+
+//   // Expecting a JSON object so check it's the correct type
+//   if (!doc.is<JsonObject>()) {
+//     Serial.println(F("JSON is not an object"));
+//     return;
+//   }
+
+//   JsonObject obj = doc.as<JsonObject>();
+
+//   // Do something with the data here. Here's an example:
+//   for(JsonPair p : obj) {
+//     Serial.println(p.key().c_str());
+//     Serial.println(p.value().as<int>());
+//     // You could store the values in the ESP32's preferences here. 
+//     // Replace "my-app" with your preference namespace and "p.key().c_str()" with your preference key.
+//     preferences.begin("my-app", false);
+//     preferences.putInt(p.key().c_str(), p.value().as<int>());
+//     preferences.end();
+//   }
+
+//   request->send(200, "application/json", "{\"message\":\"Successfully updated demands\"}");
+// });
