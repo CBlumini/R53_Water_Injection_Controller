@@ -91,10 +91,13 @@ void setFlags(int relayId, int relayState) {
         break;
       }
 }
-
+  // TODO: Update this code so it works with a map
+  // Give it the map and column names and then have it do it's thing
 int interpolateVaules(int val, int* xMapVals, int* yMapVals, uint8_t size) {
+    // what to give back if we are outside the bounds of the maps
     if (val <= xMapVals[0]) return yMapVals[0];
     if (val >= xMapVals[size - 1]) return yMapVals[size - 1];
+    // Run interpolation if we are in bounds
     uint8_t pos = 1;
     while (val > xMapVals[pos]) pos++;
     if (val == xMapVals[pos]) return yMapVals[pos];

@@ -467,6 +467,8 @@ void setup()
   // ledcAttachPin(VALVEPIN, PWM1_CH);
   // ledcSetup(PWM1_CH, PWM1_FREQ, PWM1_RES);
 
+
+
   ///////////////SETUP ROUTES////////////
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -496,6 +498,8 @@ void setup()
     String response;
     serializeJson(doc, response);
     request->send(200, "application/json", response); });
+
+  // TODO: Write code to update webpage with map val
 
 
 
@@ -596,10 +600,7 @@ void loop()
   cycleOutput(1000, VALVEPIN, outputFlag1);
   cycleOutput(1000, PUMPRELAYPIN, outputFlag2);
 
-
-  /////////////////////////////////////////////
-  //////////////Voltage Divider Code///////////
-  /////////////////////////////////////////////
+#pragma region
 #ifdef USE_INTRANET
   // get stuff about the injectors
   long onTime = pulseIn(INJECTORDUTYPIN, HIGH);
@@ -621,16 +622,21 @@ void loop()
 #ifdef SIMULATOR
   // 3.3v and 4096 counts... 4095/3.3
   float carVoltageRaw = analogRead(VOLTAGESENSORPIN);
-  float carVoltage = carVoltageRaw * 1240.90 * 10; // assume 10x divider
+  float carVoltage = (carVoltageRaw/1240.90) * 10; // assume 10x divider
+  // TODO: Figure out why this isnt scaling right
   float period = analogRead(INJECTORDUTYPIN)/4095;
   int rpms = period*7000;
   int duty = period;
+  Serial.println(period);
+
 
   
 #endif
-
+#pragma endregion
   // check that the car is on and charging
   if (carVoltage > CARCHARGINETHRESHOLD){
+    Serial.println("Voltage met");
+    Serial.println(carVoltage);
     carCharging = true;
   } else {
     carCharging = false;
@@ -638,6 +644,9 @@ void loop()
 
   // check the car is running
   if (rpms > CARRUNNINGRPM) {
+    Serial.println("speed met");
+    Serial.println(period);
+    Serial.println(rpms);
     carRunning = true;
   } else {
     carRunning = false;
@@ -646,6 +655,7 @@ void loop()
   // enable injection
   if (carRunning && carCharging){
     // turn on the pump
+    Serial.print("injecting");
     digitalWrite(PUMPRELAYPIN, HIGH);
 
     // get RPM scaling
