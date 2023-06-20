@@ -44,6 +44,9 @@ bool outputFlag0 = false;
 bool outputFlag1 = false;
 bool outputFlag2 = false;
 bool outputFlag3 = false;
+bool carCharging = false;
+bool carRunning = false;
+bool safeToInject = false;
 
 unsigned long currentTime = 0;
 unsigned long prevTime = 0;
@@ -535,6 +538,14 @@ void setup()
   pinMode(valvePin, OUTPUT);
   pinMode(pumpRelayPin, OUTPUT);
   pinMode(spareOutputPin, OUTPUT);
+  pinMode(voltageSesnorPin, INPUT);
+  pinMode(injectorDutyPin, INPUT);
+
+  // setup the valve
+  // ledcAttachPin(LED_GPIO, PWM1_Ch);
+  // ledcSetup(PWM1_Ch, PWM1_Freq, PWM1_Res);
+  ledcAttachPin(valvePin, 0);
+  ledcSetup(0, 100, 10);
 
   ///////////////SETUP ROUTES////////////
   // Route for root / web page
@@ -674,6 +685,43 @@ void loop()
   cycleOutput(1000, ledPin, outputFlag0);
   cycleOutput(1000, valvePin, outputFlag1);
   cycleOutput(1000, pumpRelayPin, outputFlag2);
+
+  float carVoltage = analogRead(voltageSesnorPin);
+  /////////////////////////////////////////////
+  //////////////Voltage Divider Code///////////
+  /////////////////////////////////////////////
+
+  // get stuff about the injectors
+  long onTime = pulseIn(injectorDutyPin, HIGH);
+  long offTime = pulseIn(injectorDutyPin, LOW);
+  long period = onTime+offTime;
+  float freq = 10000000/period;
+  int rpms = freq*2*60; // two revs per pulse then seconds to mins
+  int duty = (onTime/period)*100;
+
+  // check that the car is on and charging
+  if (carVoltage > carChargingThreshold){
+    carCharging = true;
+  } else {
+    carCharging = false;
+  }
+
+  // check the car is running
+  if (rpms > runningRpm) {
+    carRunning = true;
+  } else {
+    carRunning = false;
+  }
+
+  // enable injection
+  if (carRunning && carCharging){
+    // turn on the pump
+    digitalWrite(pumpRelayPin, HIGH);
+
+  } else{
+    // do nothing 
+  }
+
 
   //TODO: Implement simple voltage check
   //TODO: Implement pump actuation (lowest speed breakpoint with meth demand -100rpm)

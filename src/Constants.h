@@ -12,5 +12,8 @@ const int pushToInjectPin = 34;
 const int flowMeterPin = 35;
 const int injectorDutyPin = 36;
 const int spareInputPin = 39;
+// Ref vals
+const float carChargingThreshold = 13.0;
+const float runningRpm = 500;
 
 #endif
