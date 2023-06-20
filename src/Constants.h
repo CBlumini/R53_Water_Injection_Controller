@@ -3,7 +3,7 @@
 
 // Outputs
 const int LEDPIN = 2;
-const int VALVEPIN = 25;
+const int VALVEPIN = 5;
 const int PUMPRELAYPIN = 26;
 const int SPAREOUTPUTPIN = 27;
 const int PWM1_CH = 0;

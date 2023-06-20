@@ -172,15 +172,15 @@
   <script>
 
     var dataPoints = {
-      "breakpoint1": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakpoint2": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakpoint3": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakpoint4": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakpoint5": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakpoint6": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakpoint7": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakpoint8": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakpoint9": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakPoint1": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakPoint2": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakPoint3": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakPoint4": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakPoint5": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakPoint6": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakPoint7": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakPoint8": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakPoint9": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
     };
 
     var numOutputs = 4;
@@ -273,9 +273,10 @@
       xhr2.onload = function () {
         if (xhr2.status == 200) {
           let demandVals = JSON.parse(xhr2.responseText);
-          let demandKeys = ["key_3000", "key_3500", "key_4000", "key_4500", "key_5000", "key_5500", "key_6000", "key_6500", "key_7000"]
+          console.log(demandVals)
+          let breakpoints = ["breakPoint1", "breakPoint2", "breakPoint3", "breakPoint4", "breakPoint5", "breakPoint6", "breakPoint7", "breakPoint8", "breakPoint9"]
 
-          demandKeys.forEach((key) => {
+          breakpoints.forEach((key) => {
             let input = document.getElementById(key);
             if (input && demandVals.hasOwnProperty(key)) {
               input.placeholder = `Current ${demandVals[key]}`;
@@ -294,7 +295,6 @@
     }
 
 
-
     function toggleCheckbox(element) {
       console.log("checkbox toggled")
       let xhr = new XMLHttpRequest();
@@ -310,8 +310,3 @@
 
 </html>
 
-<!-- String buttons = "";
-String pumpState = getOutputStatus(0);
-buttons = "<h4>Pump Test</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id = 0 " + pumpState + "><span class=\"slider\"></span></label>";
-String valveState = getOutputStatus(1);
-buttons += "<h4>Valve Test</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id = 1 " + valveState + "><span class=\"slider\"></span></label>"; -->

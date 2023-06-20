@@ -72,30 +72,6 @@ std::map<std::string, SpeedDemandStruct> demandMap = {
 };
 
 
-// // Access value
-// int value = demandMap["key_3000"];
-// // Modify value
-// demandMap["key_3000"] = 100;
-
-// struct ValueStruct {
-//     int value1;
-//     int value2;
-// };
-
-// std::map<std::string, ValueStruct> myMap;
-
-// myMap["key_3000"] = {3000, 0};
-
-// // Accessing the values
-// int firstValue = myMap["key_3000"].value1;
-// int secondValue = myMap["key_3000"].value2;
-
-// // Modifying the values
-// myMap["key_3000"].value1 = 4000;
-// myMap["key_3000"].value2 = 100;
-
-
-
 ///////////////////////// WEB PAGE CODE ///////////////////
 #pragma region
 const char index_html[] PROGMEM = R"rawliteral(
@@ -273,15 +249,15 @@ const char index_html[] PROGMEM = R"rawliteral(
   <script>
 
     var dataPoints = {
-      "breakpoint1": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakpoint2": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakpoint3": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakpoint4": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakpoint5": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakpoint6": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakpoint7": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakpoint8": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakpoint9": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakPoint1": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakPoint2": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakPoint3": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakPoint4": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakPoint5": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakPoint6": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakPoint7": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakPoint8": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+      "breakPoint9": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
     };
 
     var numOutputs = 4;
@@ -374,9 +350,10 @@ const char index_html[] PROGMEM = R"rawliteral(
       xhr2.onload = function () {
         if (xhr2.status == 200) {
           let demandVals = JSON.parse(xhr2.responseText);
-          let demandKeys = ["key_3000", "key_3500", "key_4000", "key_4500", "key_5000", "key_5500", "key_6000", "key_6500", "key_7000"]
+          console.log(demandVals)
+          let breakpoints = ["breakPoint1", "breakPoint2", "breakPoint3", "breakPoint4", "breakPoint5", "breakPoint6", "breakPoint7", "breakPoint8", "breakPoint9"]
 
-          demandKeys.forEach((key) => {
+          breakpoints.forEach((key) => {
             let input = document.getElementById(key);
             if (input && demandVals.hasOwnProperty(key)) {
               input.placeholder = `Current ${demandVals[key]}`;
@@ -395,7 +372,6 @@ const char index_html[] PROGMEM = R"rawliteral(
     }
 
 
-
     function toggleCheckbox(element) {
       console.log("checkbox toggled")
       let xhr = new XMLHttpRequest();
@@ -406,65 +382,15 @@ const char index_html[] PROGMEM = R"rawliteral(
       }
       xhr.send();
     }
-    function updateStartRPM() {
-      let startRPM = document.getElementById('var1').value;
-      // Validation
-      if (!Number.isInteger(Number(startRPM))) {
-        alert("Must be a whole number");
-        return;
-      }
-      let xhr = new XMLHttpRequest();
-      xhr.open("GET", "/updateStartRPM?startRPM=" + startRPM);
-
-      // let the user know it worked
-      xhr.onload = () => {
-        if (xhr.status == 200) {
-          alert("Updated Start RPM to", xhr.responseText)
-        } else {
-          alert("Failed to update Start RPM, Error: ", xhr.status)
-        }
-      };
-
-      // Error if the request deosnt go through
-      xhr.onerror = () => {
-        alert("Request failed.");
-      };
-      xhr.send();
-    }
-    function updateEndRPM() {
-      let endRPM = document.getElementById('var2').value;
-      // Validation
-      if (!Number.isInteger(Number(endRPM))) {
-        alert("Must be a whole number");
-        return;
-      }
-      let xhr = new XMLHttpRequest();
-      xhr.open("GET", "/updateEndRPM?endRPM=" + endRPM);
-
-      // let the user know it went througg
-      xhr.onload = () => {
-        if (xhr.status == 200) {
-          alert("Updated End RPM")
-        } else {
-          alert("Failed to update End RPM, Error: ", xhr.status)
-        }
-      };
-
-      // Error if the request doesnt go through
-      xhr.onerror = () => {
-        alert("Request failed.");
-      };
-      xhr.send();
-    }
   </script>
 </body>
 
 </html>
+
 )rawliteral";
 
 #pragma endregion
 //////////////////////// END WEB CODE /////////////////////
-// I think I got this code from the wifi example
 
 
 ////////////////// SUPPORT FUNCTIONS AND CLASS DECLARATIONS///////////
@@ -482,10 +408,6 @@ void printMap() {
         Serial.println(pair.second.methanol);
     }
 }
-
-// void printJson(JsonObject){
-//   for (JsonObject::iterator it = doc.begin())
-// }
 
 //////////////// END SUPPORT FUNCTIONS //////////////////
 
@@ -542,8 +464,8 @@ void setup()
   pinMode(INJECTORDUTYPIN, INPUT);
 
 
-  ledcAttachPin(VALVEPIN, PWM1_CH);
-  ledcSetup(PWM1_CH, PWM1_FREQ, PWM1_RES);
+  // ledcAttachPin(VALVEPIN, PWM1_CH);
+  // ledcSetup(PWM1_CH, PWM1_FREQ, PWM1_RES);
 
   ///////////////SETUP ROUTES////////////
   // Route for root / web page
@@ -674,11 +596,11 @@ void loop()
   cycleOutput(1000, VALVEPIN, outputFlag1);
   cycleOutput(1000, PUMPRELAYPIN, outputFlag2);
 
-  float carVoltage = analogRead(VOLTAGESENSORPIN);
+
   /////////////////////////////////////////////
   //////////////Voltage Divider Code///////////
   /////////////////////////////////////////////
-
+#ifdef USE_INTRANET
   // get stuff about the injectors
   long onTime = pulseIn(INJECTORDUTYPIN, HIGH);
   long offTime = pulseIn(INJECTORDUTYPIN, LOW);
@@ -686,6 +608,26 @@ void loop()
   float freq = 10000000/period;
   int rpms = freq*2*60; // two revs per pulse then seconds to mins
   int duty = (onTime/period)*100;
+#endif
+#ifdef USE_AP
+  // get stuff about the injectors
+  long onTime = pulseIn(INJECTORDUTYPIN, HIGH);
+  long offTime = pulseIn(INJECTORDUTYPIN, LOW);
+  long period = onTime+offTime;
+  float freq = 10000000/period;
+  int rpms = freq*2*60; // two revs per pulse then seconds to mins
+  int duty = (onTime/period)*100;
+#endif
+#ifdef SIMULATOR
+  // 3.3v and 4096 counts... 4095/3.3
+  float carVoltageRaw = analogRead(VOLTAGESENSORPIN);
+  float carVoltage = carVoltageRaw * 1240.90 * 10; // assume 10x divider
+  float period = analogRead(INJECTORDUTYPIN)/4095;
+  int rpms = period*7000;
+  int duty = period;
+
+  
+#endif
 
   // check that the car is on and charging
   if (carVoltage > CARCHARGINETHRESHOLD){
