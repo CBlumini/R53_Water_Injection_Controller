@@ -3,7 +3,7 @@
   "author": "Charlie",
   "editor": "wokwi",
   "parts": [
-    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 2.15, "left": -10.03, "attrs": {} },
     { "type": "wokwi-relay-module", "id": "tiny1", "top": -121.48, "left": 200, "attrs": {} },
     {
       "type": "wokwi-led",
@@ -36,6 +36,20 @@
       "top": 9.97,
       "left": 190.77,
       "attrs": { "travelLength": "30" }
+    },
+    {
+      "type": "wokwi-slide-potentiometer",
+      "id": "pot2",
+      "top": 131.99,
+      "left": 191.24,
+      "attrs": { "travelLength": "30" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led3",
+      "top": -38.82,
+      "left": 281.1,
+      "attrs": { "color": "red" }
     }
   ],
   "connections": [
@@ -47,7 +61,9 @@
     [ "gnd2:GND", "led2:C", "black", [ "v-14.17", "h-53.31" ] ],
     [ "led1:C", "gnd2:GND", "black", [ "h0.32", "v-13.15", "h47.13" ] ],
     [ "tiny1:IN", "esp:D26", "green", [ "h-254.9", "v137.29" ] ],
-    [ "pot1:SIG", "esp:D33", "blue", [ "h-50.81", "v-109.29", "h-174.47", "v14.81" ] ]
+    [ "pot1:SIG", "esp:D33", "blue", [ "h-50.81", "v-109.29", "h-174.47", "v14.81" ] ],
+    [ "pot2:SIG", "esp:VP", "gold", [ "h-71.7", "v-209.8", "h-137.45", "v0.72" ] ],
+    [ "esp:D25", "led3:A", "magenta", [ "h-22.62", "v143.02" ] ]
   ],
   "dependencies": {}
 }
