@@ -305,56 +305,6 @@
       }
       xhr.send();
     }
-    function updateStartRPM() {
-      let startRPM = document.getElementById('var1').value;
-      // Validation
-      if (!Number.isInteger(Number(startRPM))) {
-        alert("Must be a whole number");
-        return;
-      }
-      let xhr = new XMLHttpRequest();
-      xhr.open("GET", "/updateStartRPM?startRPM=" + startRPM);
-
-      // let the user know it worked
-      xhr.onload = () => {
-        if (xhr.status == 200) {
-          alert("Updated Start RPM to", xhr.responseText)
-        } else {
-          alert("Failed to update Start RPM, Error: ", xhr.status)
-        }
-      };
-
-      // Error if the request deosnt go through
-      xhr.onerror = () => {
-        alert("Request failed.");
-      };
-      xhr.send();
-    }
-    function updateEndRPM() {
-      let endRPM = document.getElementById('var2').value;
-      // Validation
-      if (!Number.isInteger(Number(endRPM))) {
-        alert("Must be a whole number");
-        return;
-      }
-      let xhr = new XMLHttpRequest();
-      xhr.open("GET", "/updateEndRPM?endRPM=" + endRPM);
-
-      // let the user know it went througg
-      xhr.onload = () => {
-        if (xhr.status == 200) {
-          alert("Updated End RPM")
-        } else {
-          alert("Failed to update End RPM, Error: ", xhr.status)
-        }
-      };
-
-      // Error if the request doesnt go through
-      xhr.onerror = () => {
-        alert("Request failed.");
-      };
-      xhr.send();
-    }
   </script>
 </body>
 

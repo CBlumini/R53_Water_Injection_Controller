@@ -2,18 +2,21 @@
 #define CONSTANTS_H
 
 // Outputs
-const int ledPin = 2;
-const int valvePin = 25;
-const int pumpRelayPin = 26;
-const int spareOutputPin = 27;
+const int LEDPIN = 2;
+const int VALVEPIN = 25;
+const int PUMPRELAYPIN = 26;
+const int SPAREOUTPUTPIN = 27;
+const int PWM1_CH = 0;
+const int PWM1_RES = 10;
+const int PWM1_FREQ =100;
 // Inputs
-const int voltageSesnorPin = 33;
+const int VOLTAGESENSORPIN = 33;
 const int pushToInjectPin = 34;
 const int flowMeterPin = 35;
-const int injectorDutyPin = 36;
+const int INJECTORDUTYPIN = 36;
 const int spareInputPin = 39;
 // Ref vals
-const float carChargingThreshold = 13.0;
-const float runningRpm = 500;
+const float CARCHARGINETHRESHOLD = 13.0;
+const float CARRUNNINGRPM = 500;
 
 #endif

@@ -34,7 +34,7 @@ IPAddress actualIP;
 
 AsyncWebServer server(80);
 
-int actuatorOutputs[] = {ledPin, valvePin, pumpRelayPin, spareOutputPin};
+int actuatorOutputs[] = {LEDPIN, VALVEPIN, PUMPRELAYPIN, SPAREOUTPUTPIN};
 
 int injectionStartRPM = 0;
 int injectionEndRPM = 0;
@@ -534,18 +534,16 @@ void setup()
   Serial.begin(115200);
 
   // Set up the output pins
-  pinMode(ledPin, OUTPUT);
-  pinMode(valvePin, OUTPUT);
-  pinMode(pumpRelayPin, OUTPUT);
-  pinMode(spareOutputPin, OUTPUT);
-  pinMode(voltageSesnorPin, INPUT);
-  pinMode(injectorDutyPin, INPUT);
+  pinMode(LEDPIN, OUTPUT);
+  pinMode(VALVEPIN, OUTPUT);
+  pinMode(PUMPRELAYPIN, OUTPUT);
+  pinMode(SPAREOUTPUTPIN, OUTPUT);
+  pinMode(VOLTAGESENSORPIN, INPUT);
+  pinMode(INJECTORDUTYPIN, INPUT);
 
-  // setup the valve
-  // ledcAttachPin(LED_GPIO, PWM1_Ch);
-  // ledcSetup(PWM1_Ch, PWM1_Freq, PWM1_Res);
-  ledcAttachPin(valvePin, 0);
-  ledcSetup(0, 100, 10);
+
+  ledcAttachPin(VALVEPIN, PWM1_CH);
+  ledcSetup(PWM1_CH, PWM1_FREQ, PWM1_RES);
 
   ///////////////SETUP ROUTES////////////
   // Route for root / web page
@@ -578,17 +576,7 @@ void setup()
     request->send(200, "application/json", response); });
 
 
-  server.on("/getStartEnd", HTTP_GET, [](AsyncWebServerRequest *request)
-  {
-    Serial.println("getting start and end");
-    DynamicJsonDocument doc(1024);
 
-    doc["startRPM"] = preferences.getUInt("start", 0);
-    Serial.println(preferences.getString("start"));
-    String response;
-    serializeJson(doc, response);
-    request->send(200, "application/json", response);
-  });
 
 server.on("/updateDemands", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) 
   {
@@ -682,32 +670,32 @@ server.begin();
 
 void loop()
 {
-  cycleOutput(1000, ledPin, outputFlag0);
-  cycleOutput(1000, valvePin, outputFlag1);
-  cycleOutput(1000, pumpRelayPin, outputFlag2);
+  cycleOutput(1000, LEDPIN, outputFlag0);
+  cycleOutput(1000, VALVEPIN, outputFlag1);
+  cycleOutput(1000, PUMPRELAYPIN, outputFlag2);
 
-  float carVoltage = analogRead(voltageSesnorPin);
+  float carVoltage = analogRead(VOLTAGESENSORPIN);
   /////////////////////////////////////////////
   //////////////Voltage Divider Code///////////
   /////////////////////////////////////////////
 
   // get stuff about the injectors
-  long onTime = pulseIn(injectorDutyPin, HIGH);
-  long offTime = pulseIn(injectorDutyPin, LOW);
+  long onTime = pulseIn(INJECTORDUTYPIN, HIGH);
+  long offTime = pulseIn(INJECTORDUTYPIN, LOW);
   long period = onTime+offTime;
   float freq = 10000000/period;
   int rpms = freq*2*60; // two revs per pulse then seconds to mins
   int duty = (onTime/period)*100;
 
   // check that the car is on and charging
-  if (carVoltage > carChargingThreshold){
+  if (carVoltage > CARCHARGINETHRESHOLD){
     carCharging = true;
   } else {
     carCharging = false;
   }
 
   // check the car is running
-  if (rpms > runningRpm) {
+  if (rpms > CARRUNNINGRPM) {
     carRunning = true;
   } else {
     carRunning = false;
@@ -716,7 +704,9 @@ void loop()
   // enable injection
   if (carRunning && carCharging){
     // turn on the pump
-    digitalWrite(pumpRelayPin, HIGH);
+    digitalWrite(PUMPRELAYPIN, HIGH);
+
+    // get RPM scaling
 
   } else{
     // do nothing 
