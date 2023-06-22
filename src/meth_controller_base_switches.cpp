@@ -11,13 +11,14 @@
 #include <Preferences.h>
 #include <typeinfo>
 #include <iostream>
+#include <webpage.h>
 // #include <PreferencesManager.h>
 
 // Set how you want to connect
 // #define USE_INTRANET
 // #define USE_AP
 #define SIMULATOR
-// #define USE_PREFENCES
+#define USE_PREFENCES
 
 // once  you are read to go live these settings are what you client will connect to
 #define AP_SSID "Water Inject"
@@ -75,333 +76,14 @@ std::map<std::string, SpeedDemandStruct> demandMap = {
 
 ///////////////////////// WEB PAGE CODE ///////////////////
 #pragma region
-const char index_html[] PROGMEM = R"rawliteral(
-<!DOCTYPE HTML>
-<html>
-
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    html {
-      font-family: Arial;
-      display: inline-block;
-      text-align: center;
-    }
-
-    h2 {
-      font-size: 2.5rem;
-    }
-
-    p {
-      font-size: 2.5rem;
-    }
-
-    body {
-      max-width: 600px;
-      margin: 0px auto;
-      padding-bottom: 25px;
-    }
-
-    label {
-      font-size: small;
-    }
-
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 60px;
-      height: 34px;
-    }
-
-    .switch input {
-      display: none;
-    }
-
-    .slider {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      border-radius: 17px;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 26px;
-      width: 26px;
-      left: 4px;
-      bottom: 4px;
-      background-color: #fff;
-      -webkit-transition: .4s;
-      transition: .4s;
-      border-radius: 34px;
-    }
-
-    input:checked+.slider {
-      background-color: #2196F3;
-    }
-
-    input:checked+.slider:before {
-      -webkit-transform: translateX(26px);
-      -ms-transform: translateX(26px);
-      transform: translateX(26px);
-    }
-
-    .flex-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-  </style>
-</head>
-
-<body>
-  <h3>Blumini Injects Test and Setup Page</h3>
-  <div class="flex-container">
-    <h4>LED Test</h4>
-    <label class="switch" for="0">
-      <input type="checkbox" id="0" onchange="toggleCheckbox(this)">
-      <span class="slider">
-      </span>
-    </label>
-    <h4>Injector Test</h4>
-    <label class="switch" for="1">
-      <input type="checkbox" id="1" onchange="toggleCheckbox(this)">
-      <span class="slider">
-      </span>
-    </label>
-    <h4>Pump Test</h4>
-    <label class="switch" for="2">
-      <input type="checkbox" id="2" onchange="toggleCheckbox(this)">
-      <span class="slider">
-      </span>
-    </label>
-    <h4>Spare Output Test</h4>
-    <label class="switch" for="3">
-      <input type="checkbox" id="3" onchange="toggleCheckbox(this)">
-      <span class="slider">
-      </span>
-    </label>
-  </div>
-  <div class="flex-container">
-    <h4>Enter Speed, Duty Cycle and Demand Values:</h4>
-    <h5> The speed is first checked where a multiplier factor is applied then
-      the injector duty cycle is checked and the output value is multiplied by the 
-      speed multiplier
-    </h5>
-
-    <div style="display: flex;">
-      <div>
-        <h5>Speed Values</h5>
-        <input type="text" id="sp1" placeholder="Enter speed value" onchange="updateSpeed('1')">
-        <input type="text" id="sp2" placeholder="Enter speed value" onchange="updateSpeed('2')">
-        <input type="text" id="sp3" placeholder="Enter speed value" onchange="updateSpeed('3')">
-        <input type="text" id="sp4" placeholder="Enter speed value" onchange="updateSpeed('4')">
-        <input type="text" id="sp5" placeholder="Enter speed value" onchange="updateSpeed('5')">
-        <input type="text" id="sp6" placeholder="Enter speed value" onchange="updateSpeed('6')">
-        <input type="text" id="sp7" placeholder="Enter speed value" onchange="updateSpeed('7')">
-        <input type="text" id="sp8" placeholder="Enter speed value" onchange="updateSpeed('8')">
-        <input type="text" id="sp9" placeholder="Enter speed value" onchange="updateSpeed('9')">
-      </div>
-      <div>
-        <h5>Speed Multipliers</h5>
-        <input type="text" id="spm1" placeholder="Enter speed mult value" onchange="updateSpeedMult('1')">
-        <input type="text" id="spm2" placeholder="Enter speed mult value" onchange="updateSpeedMult('2')">
-        <input type="text" id="spm3" placeholder="Enter speed mult value" onchange="updateSpeedMult('3')">
-        <input type="text" id="spm4" placeholder="Enter speed mult value" onchange="updateSpeedMult('4')">
-        <input type="text" id="spm5" placeholder="Enter speed mult value" onchange="updateSpeedMult('5')">
-        <input type="text" id="spm6" placeholder="Enter speed mult value" onchange="updateSpeedMult('6')">
-        <input type="text" id="spm7" placeholder="Enter speed mult value" onchange="updateSpeedMult('7')">
-        <input type="text" id="spm8" placeholder="Enter speed mult value" onchange="updateSpeedMult('8')">
-        <input type="text" id="spm9" placeholder="Enter speed mult value" onchange="updateSpeedMult('9')">
-      </div>
-      <div>
-        <h5>Duty Cycle Values</h5>
-        <input type="text" id="dc1" placeholder="Enter speed value" onchange="updateDuty('1')">
-        <input type="text" id="dc2" placeholder="Enter speed value" onchange="updateDuty('2')">
-        <input type="text" id="dc3" placeholder="Enter speed value" onchange="updateDuty('3')">
-        <input type="text" id="dc4" placeholder="Enter speed value" onchange="updateDuty('4')">
-        <input type="text" id="dc5" placeholder="Enter speed value" onchange="updateDuty('5')">
-        <input type="text" id="dc6" placeholder="Enter speed value" onchange="updateDuty('6')">
-        <input type="text" id="dc7" placeholder="Enter speed value" onchange="updateDuty('7')">
-        <input type="text" id="dc8" placeholder="Enter speed value" onchange="updateDuty('8')">
-        <input type="text" id="dc9" placeholder="Enter speed value" onchange="updateDuty('9')">
-      </div>
-      <div style="margin-right: 10px;">
-      <h5> Methanol Values </h5>
-        <input type="text" id="mo1" placeholder="Enter value for break point" onchange="updateMethanol('1')">
-        <input type="text" id="mo2" placeholder="Enter value for break point" onchange="updateMethanol('2')">
-        <input type="text" id="mo3" placeholder="Enter value for break point" onchange="updateMethanol('3')">
-        <input type="text" id="mo4" placeholder="Enter value for break point" onchange="updateMethanol('4')">
-        <input type="text" id="mo5" placeholder="Enter value for break point" onchange="updateMethanol('5')">
-        <input type="text" id="mo6" placeholder="Enter value for break point" onchange="updateMethanol('6')">
-        <input type="text" id="mo7" placeholder="Enter value for break point" onchange="updateMethanol('7')">
-        <input type="text" id="mo8" placeholder="Enter value for break point" onchange="updateMethanol('8')">
-        <input type="text" id="mo9" placeholder="Enter value for break point" onchange="updateMethanol('9')">
-      </div>
-
-    </div>
-    <button onclick="submitData()">Submit Data</button>
-  </div>
-  <script>
-
-    var demandMapCli = {
-      "bp1": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
-      "bp2": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
-      "bp3": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
-      "bp4": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
-      "bp5": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
-      "bp6": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
-      "bp7": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
-      "bp8": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
-      "bp9": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
-    };
-
-    var numOutputs = 4;
-
-    /////////// MAP UPDATE FUNCS ////////////
-    function updateSpeed(bp){
-      let value = Number(document.getElementById("sp"+bp).value);
-      if (!Number.isInteger(Number(value))) {
-        alert("Must be integer")
-        return;
-      }
-      //TODO: add check for less than 100
-      //TODO: add check for 0 or greater
-      demandMapCli["bp"+bp].speed = value
-    }
-
-    function updateSpeedMult(bp){
-      let value = Number(document.getElementById("spm"+bp).value);
-      if (!Number.isInteger(Number(value))) {
-        alert("Must be integer")
-        return;
-      }
-      //TODO: add check for less than 100
-      //TODO: add check for 0 or greater
-      demandMapCli["bp"+bp].speedMult = value
-    }
-
-    function updateDuty(bp){
-      let value = Number(document.getElementById("dc"+bp).value);
-      if (!Number.isInteger(Number(value))) {
-        alert("Must be integer")
-        return;
-      }
-      //TODO: add check for less than 100
-      //TODO: add check for 0 or greater
-      demandMapCli["bp"+bp].dutyCycle = value
-    }
-
-    function updateMethanol(bp){
-      let value = Number(document.getElementById("mo"+bp).value);
-      if (!Number.isInteger(Number(value))) {
-        alert("Must be integer")
-        return;
-      }
-      //TODO: add check for less than 100
-      //TODO: add check for 0 or greater
-      demandMapCli["bp"+bp].methanol = value
-    }
-
-    function submitData() {
-      console.log("User data to be sent to server: ", demandMapCli);
-
-      let xhr = new XMLHttpRequest();
-      xhr.open("POST", "/updateDemands", true);
-      xhr.setRequestHeader("Content-Type", "application/json");
-
-      xhr.onload = function () {
-      if (xhr.status == 200) {
-        alert("Data successfully sent to the server.");
-      } else {
-        alert("Failed to send data. Error: " + xhr.status);
-      }
-      };
-
-      xhr.onerror = function () {
-        alert("Request failed.");
-      };
-
-      xhr.send(JSON.stringify(demandMapCli));
-    }
-    /////////// END MAP UPDATE FUNCS ////////////
-
-    window.onload = function () {
-      // first request, get the state of the outputs
-      let xhr1 = new XMLHttpRequest();
-      xhr1.open("GET", "/getOutputStates", true);
-      xhr1.onload = function () {
-        if (xhr1.status == 200) {
-          let relayStates = JSON.parse(xhr1.responseText);
-          for (let i = 0; i < numOutputs; i++) {
-            let checkbox = document.getElementById(i);
-            checkbox.checked = relayStates[i.toString()] === "HIGH";
-          }
-        }
-      };
-      xhr1.send();
-
-      // second request to get the values from the demand map
-      // use this to populate the values in the text boxes when the page loads
-      // so the user knows what the existing values are
-      let xhr2 = new XMLHttpRequest();
-      xhr2.open("GET", "/getDemandMap", true);
-
-      xhr2.onload = function () {
-        if (xhr2.status == 200) {
-          let demandVals = JSON.parse(xhr2.responseText);
-          let counter = 1;
-          //console.log(demandVals)
-          Object.keys(demandVals).forEach((key)=> {
-            // update our local copy of the demand map
-            demandMapCli[key] = demandVals[key]
-
-            // update the values in the input boxes
-            document.getElementById("sp" + (counter)).placeholder = `${demandMapCli[key].speed}`
-            document.getElementById("spm" + (counter)).placeholder = `${demandMapCli[key].speedMult}`
-            document.getElementById("dc" + (counter)).placeholder = `${demandMapCli[key].dutyCycle}`
-            document.getElementById("mo" + (counter)).placeholder = `${demandMapCli[key].methanol}`
-            counter++;
-          });
-        } else {
-              console.log("Failed to load data")
-            }
-      }
-      xhr2.onerror = function () {
-        console.log("Request Failed")
-      };
-        
-      xhr2.send();
-    }
-
-
-    function toggleCheckbox(element) {
-      console.log("checkbox toggled")
-      let xhr = new XMLHttpRequest();
-      if (element.checked) {
-        xhr.open("GET", "/update?relay=" + element.id + "&state=1", true);
-      } else {
-        xhr.open("GET", "/update?relay=" + element.id + "&state=0", true);
-      }
-      xhr.send();
-    }
-  </script>
-</body>
-
-</html>
-)rawliteral";
+// const char index_html[] WEBPAGE;
 
 #pragma endregion
 //////////////////////// END WEB CODE /////////////////////
 
 
 ////////////////// SUPPORT FUNCTIONS AND CLASS DECLARATIONS///////////
-void printMap() {
+void printMap(const std::map<std::string, SpeedDemandStruct>& demandMap) {
     for (auto const& pair: demandMap) {
         Serial.print("Key: ");
         Serial.print(pair.first.c_str());
@@ -506,7 +188,7 @@ void setup()
   ///////////////SETUP ROUTES////////////
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send_P(200, "text/html", index_html); });
+            { request->send_P(200, "text/html", WEBPAGE); });
 
   server.on("/update", HTTP_GET, [](AsyncWebServerRequest *request)
             {
@@ -596,7 +278,7 @@ server.on("/updateDemands", HTTP_POST, [](AsyncWebServerRequest *request) {}, NU
     };
 
     // PRINT THE MAP
-    printMap();
+    printMap(demandMap);
 
     // update the preference values
     std::string bpStoreSpeed = "";
