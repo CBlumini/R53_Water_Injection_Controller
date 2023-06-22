@@ -60,15 +60,15 @@ struct SpeedDemandStruct {
 };
 
 std::map<std::string, SpeedDemandStruct> demandMap = {
-  {"breakPoint1", {3000, 1, 100, 0}},
-  {"breakPoint2", {3500, 1, 100, 0}},
-  {"breakPoint3", {4000, 1, 100, 0}},
-  {"breakPoint4", {4500, 1, 100, 0}},
-  {"breakPoint5", {5000, 1, 100, 0}},
-  {"breakPoint6", {5500, 1, 100, 0}},
-  {"breakPoint7", {6000, 1, 100, 0}},
-  {"breakPoint8", {6500, 1, 100, 0}},
-  {"breakPoint9", {7000, 1, 100, 0}}
+  {"bp1", {3000, 1, 100, 0}},
+  {"bp2", {3500, 1, 100, 0}},
+  {"bp3", {4000, 1, 100, 0}},
+  {"bp4", {4500, 1, 100, 0}},
+  {"bp5", {5000, 1, 100, 0}},
+  {"bp6", {5500, 1, 100, 0}},
+  {"bp7", {6000, 1, 100, 0}},
+  {"bp8", {6500, 1, 100, 0}},
+  {"bp9", {7000, 1, 100, 0}}
 };
 
 
@@ -248,66 +248,67 @@ const char index_html[] PROGMEM = R"rawliteral(
   </div>
   <script>
 
-    var dataPoints = {
-      "breakPoint1": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakPoint2": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakPoint3": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakPoint4": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakPoint5": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakPoint6": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakPoint7": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakPoint8": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakPoint9": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+    var demandMapCli = {
+      "bp1": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
+      "bp2": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
+      "bp3": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
+      "bp4": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
+      "bp5": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
+      "bp6": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
+      "bp7": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
+      "bp8": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
+      "bp9": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
     };
 
     var numOutputs = 4;
 
-    function updateSpeed(breakpoint){
-      let value = Number(document.getElementById("sp"+breakpoint).value);
+    /////////// MAP UPDATE FUNCS ////////////
+    function updateSpeed(bp){
+      let value = Number(document.getElementById("sp"+bp).value);
       if (!Number.isInteger(Number(value))) {
         alert("Must be integer")
         return;
       }
       //TODO: add check for less than 100
       //TODO: add check for 0 or greater
-      dataPoints["breakpoint"+breakpoint].speed = value
+      demandMapCli["bp"+bp].speed = value
     }
 
-    function updateSpeedMult(breakpoint){
-      let value = Number(document.getElementById("spm"+breakpoint).value);
+    function updateSpeedMult(bp){
+      let value = Number(document.getElementById("spm"+bp).value);
       if (!Number.isInteger(Number(value))) {
         alert("Must be integer")
         return;
       }
       //TODO: add check for less than 100
       //TODO: add check for 0 or greater
-      dataPoints["breakpoint"+breakpoint].speedMultiplier = value
+      demandMapCli["bp"+bp].speedMult = value
     }
 
-    function updateDuty(breakpoint){
-      let value = Number(document.getElementById("dc"+breakpoint).value);
+    function updateDuty(bp){
+      let value = Number(document.getElementById("dc"+bp).value);
       if (!Number.isInteger(Number(value))) {
         alert("Must be integer")
         return;
       }
       //TODO: add check for less than 100
       //TODO: add check for 0 or greater
-      dataPoints["breakpoint"+breakpoint].dutyCycle = value
+      demandMapCli["bp"+bp].dutyCycle = value
     }
 
-    function updateMethanol(breakpoint){
-      let value = Number(document.getElementById("dp"+breakpoint).value);
+    function updateMethanol(bp){
+      let value = Number(document.getElementById("mo"+bp).value);
       if (!Number.isInteger(Number(value))) {
         alert("Must be integer")
         return;
       }
       //TODO: add check for less than 100
       //TODO: add check for 0 or greater
-      dataPoints["breakpoint"+breakpoint].methanol = value
+      demandMapCli["bp"+bp].methanol = value
     }
 
     function submitData() {
-      console.log("User data to be sent to server: ", dataPoints);
+      console.log("User data to be sent to server: ", demandMapCli);
 
       let xhr = new XMLHttpRequest();
       xhr.open("POST", "/updateDemands", true);
@@ -325,8 +326,9 @@ const char index_html[] PROGMEM = R"rawliteral(
         alert("Request failed.");
       };
 
-      xhr.send(JSON.stringify(dataPoints));
+      xhr.send(JSON.stringify(demandMapCli));
     }
+    /////////// END MAP UPDATE FUNCS ////////////
 
     window.onload = function () {
       // first request, get the state of the outputs
@@ -343,22 +345,27 @@ const char index_html[] PROGMEM = R"rawliteral(
       };
       xhr1.send();
 
-      // second request get the state of the injection setpoints
+      // second request to get the values from the demand map
+      // use this to populate the values in the text boxes when the page loads
+      // so the user knows what the existing values are
       let xhr2 = new XMLHttpRequest();
-      xhr2.open("GET", "/getInjectionDemands", true);
+      xhr2.open("GET", "/getDemandMap", true);
 
       xhr2.onload = function () {
         if (xhr2.status == 200) {
           let demandVals = JSON.parse(xhr2.responseText);
-          console.log(demandVals)
-          let breakpoints = ["breakPoint1", "breakPoint2", "breakPoint3", "breakPoint4", "breakPoint5", "breakPoint6", "breakPoint7", "breakPoint8", "breakPoint9"]
+          let counter = 1;
+          //console.log(demandVals)
+          Object.keys(demandVals).forEach((key)=> {
+            // update our local copy of the demand map
+            demandMapCli[key] = demandVals[key]
 
-          breakpoints.forEach((key) => {
-            let input = document.getElementById(key);
-            if (input && demandVals.hasOwnProperty(key)) {
-              input.placeholder = `Current ${demandVals[key]}`;
-              injectionDemands[key] = demandVals[key];
-            }
+            // update the values in the input boxes
+            document.getElementById("sp" + (counter)).placeholder = `${demandMapCli[key].speed}`
+            document.getElementById("spm" + (counter)).placeholder = `${demandMapCli[key].speedMult}`
+            document.getElementById("dc" + (counter)).placeholder = `${demandMapCli[key].dutyCycle}`
+            document.getElementById("mo" + (counter)).placeholder = `${demandMapCli[key].methanol}`
+            counter++;
           });
         } else {
               console.log("Failed to load data")
@@ -386,7 +393,6 @@ const char index_html[] PROGMEM = R"rawliteral(
 </body>
 
 </html>
-
 )rawliteral";
 
 #pragma endregion
@@ -468,6 +474,29 @@ void setup()
   // ledcSetup(PWM1_CH, PWM1_FREQ, PWM1_RES);
 
 
+  // Load the values stored in preferences into the demand map
+  preferences.begin("my-app", false);
+  for (int i = 1; i <= 9; i++)
+  {
+    String baseKey = "bp" + String(i);
+    std::string baseKeyStd = baseKey.c_str();
+
+      // bpStoreSpeed = "speed" + pair.first;
+      // bpStoreSpeedMult = "speedMult" + pair.first;
+      // bpStoreDuty = "duty" + pair.first;
+      // bpStoreMethanol = "methanol" + pair.first;
+
+    String speedKey = "speed" + baseKey;
+    String speedMultKey = "speedMult" + baseKey;
+    String dutyKey = "duty" + baseKey;
+    String methanolKey = "methanol" + baseKey;
+
+    demandMap[baseKeyStd].speed = preferences.getInt(speedKey.c_str(), 0.0);
+    demandMap[baseKeyStd].speedMult = preferences.getInt(speedMultKey.c_str(), 0.0);
+    demandMap[baseKeyStd].dutyCycle = preferences.getInt(dutyKey.c_str(), 0.0);
+    demandMap[baseKeyStd].methanol = preferences.getInt(methanolKey.c_str(), 0.0);
+  }
+
 
   ///////////////SETUP ROUTES////////////
   // Route for root / web page
@@ -499,10 +528,19 @@ void setup()
     serializeJson(doc, response);
     request->send(200, "application/json", response); });
 
-  // TODO: Write code to update webpage with map val
-
-
-
+  server.on("/getDemandMap", HTTP_GET, [](AsyncWebServerRequest *request){
+    DynamicJsonDocument doc(1024);
+    for (auto const& pair: demandMap) {
+      doc[pair.first.c_str()]["speed"] = pair.second.speed;
+      doc[pair.first.c_str()]["speedMult"] = pair.second.speedMult;
+      doc[pair.first.c_str()]["dutyCycle"] = pair.second.dutyCycle;
+      doc[pair.first.c_str()]["methanol"] = pair.second.methanol;
+    }
+    String response;
+    serializeJson(doc, response);
+    request->send(200, "application/json", response);
+  });
+    
 
 server.on("/updateDemands", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) 
   {
@@ -514,7 +552,6 @@ server.on("/updateDemands", HTTP_POST, [](AsyncWebServerRequest *request) {}, NU
       Serial.println(error.f_str());
       return;
     }
-
       // Expecting a JSON object so check it's the correct type
     if (!doc.is<JsonObject>()) {
       Serial.println(F("JSON is not an object"));
@@ -523,58 +560,55 @@ server.on("/updateDemands", HTTP_POST, [](AsyncWebServerRequest *request) {}, NU
 
     JsonObject obj = doc.as<JsonObject>();
 
-    const char* breakPointTemp;
-    int speedTemp = 0;
-    int speedMultTemp = 0;
-    int dutyCylceTemp = 0;
-    int methTemp = 0;
-
+    const char* bpTemp;
 
     // PRINT ALL THE DATA
-    for(JsonPair breakPointPair : obj) {
-      breakPointTemp = breakPointPair.key().c_str();
-      Serial.println(breakPointTemp);
-      JsonObject breakPoint = breakPointPair.value().as<JsonObject>();
-      SpeedDemandStruct &demandStruct = demandMap[breakPointTemp];
+    for(JsonPair bpPair : obj) {
+      bpTemp = bpPair.key().c_str();
+      // Serial.println(bpTemp);
+      JsonObject bp = bpPair.value().as<JsonObject>();
+      SpeedDemandStruct &demandStruct = demandMap[bpTemp];
 
-      for (JsonPair keyVal : breakPoint) {
+      for (JsonPair keyVal : bp) {
         int value = keyVal.value().as<int>();
-        Serial.print(keyVal.key().c_str());
-        Serial.print(": ");
-        Serial.println(value);
+        // Serial.print(keyVal.key().c_str());
+        // Serial.print(": ");
+        // Serial.println(value);
 
         if (keyVal.key() == "speed") {
           demandStruct.speed = value;
         }
-        else if (keyVal.key() == "speedMultiplier") {
+        else if (keyVal.key() == "speedMult") {
           demandStruct.speedMult = value;
         }
         else if (keyVal.key() == "dutyCycle") {
           demandStruct.dutyCycle = value;
         }
-        else if (keyVal.key() == "dutyCycle") {
-          demandStruct.dutyCycle = value;
+        else if (keyVal.key() == "methanol") {
+          demandStruct.methanol = value;
         }
       }
     };
 
+    // PRINT THE MAP
+    printMap();
+
     // update the preference values
-    std::string breakPointStoreSpeed = "";
-    std::string breakPointStoreSpeedMult = "";
-    std::string breakPointStoreDuty = "";
-    std::string breakPointStoreMethanol = "";
+    std::string bpStoreSpeed = "";
+    std::string bpStoreSpeedMult = "";
+    std::string bpStoreDuty = "";
+    std::string bpStoreMethanol = "";
     for (auto const& pair: demandMap) {
-      breakPointStoreSpeed = "speed" + pair.first;
-      breakPointStoreSpeedMult = "speedMult" + pair.first;
-      breakPointStoreDuty = "duty" + pair.first;
-      breakPointStoreMethanol = "methanol" + pair.first;
-      preferences.putInt(breakPointStoreSpeed.c_str(), pair.second.speed);
-      preferences.putInt(breakPointStoreSpeedMult.c_str(), pair.second.speed);
-      preferences.putInt(breakPointStoreDuty.c_str(), pair.second.speed);
-      preferences.putInt(breakPointStoreMethanol.c_str(), pair.second.methanol);
+      bpStoreSpeed = "speed" + pair.first;
+      bpStoreSpeedMult = "speedMult" + pair.first;
+      bpStoreDuty = "duty" + pair.first;
+      bpStoreMethanol = "methanol" + pair.first;
+      preferences.putInt(bpStoreSpeed.c_str(), pair.second.speed);
+      preferences.putInt(bpStoreSpeedMult.c_str(), pair.second.speedMult);
+      preferences.putInt(bpStoreDuty.c_str(), pair.second.dutyCycle);
+      preferences.putInt(bpStoreMethanol.c_str(), pair.second.methanol);
 
     }
-    printMap();
     preferences.end();
 
   });
@@ -627,10 +661,6 @@ void loop()
   float period = analogRead(INJECTORDUTYPIN)/4095;
   int rpms = period*7000;
   int duty = period;
-  Serial.println(period);
-
-
-  
 #endif
 #pragma endregion
   // check that the car is on and charging
@@ -666,42 +696,10 @@ void loop()
 
 
   //TODO: Implement simple voltage check
-  //TODO: Implement pump actuation (lowest speed breakpoint with meth demand -100rpm)
+  //TODO: Implement pump actuation (lowest speed bp with meth demand -100rpm)
   //TODO: Implement duty cycle read
   //TODO: Implement valve output
+  delay(1);
 };
 
 
-
-
-
-// server.on("/updateDemands", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
-//   DynamicJsonDocument doc(1024);
-//   DeserializationError error = deserializeJson(doc, data);
-//   if (error) {
-//     Serial.print(F("deserializeJson() failed: "));
-//     Serial.println(error.f_str());
-//     return;
-//   }
-
-//   // Expecting a JSON object so check it's the correct type
-//   if (!doc.is<JsonObject>()) {
-//     Serial.println(F("JSON is not an object"));
-//     return;
-//   }
-
-//   JsonObject obj = doc.as<JsonObject>();
-
-//   // Do something with the data here. Here's an example:
-//   for(JsonPair p : obj) {
-//     Serial.println(p.key().c_str());
-//     Serial.println(p.value().as<int>());
-//     // You could store the values in the ESP32's preferences here. 
-//     // Replace "my-app" with your preference namespace and "p.key().c_str()" with your preference key.
-//     preferences.begin("my-app", false);
-//     preferences.putInt(p.key().c_str(), p.value().as<int>());
-//     preferences.end();
-//   }
-
-//   request->send(200, "application/json", "{\"message\":\"Successfully updated demands\"}");
-// });

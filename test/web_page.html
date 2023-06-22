@@ -171,66 +171,67 @@
   </div>
   <script>
 
-    var dataPoints = {
-      "breakPoint1": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakPoint2": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakPoint3": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakPoint4": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakPoint5": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakPoint6": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakPoint7": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakPoint8": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
-      "breakPoint9": {speed: 0, speedMultiplier: 0, dutyCycle: 0, methanol: 0},
+    var demandMapCli = {
+      "bp1": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
+      "bp2": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
+      "bp3": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
+      "bp4": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
+      "bp5": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
+      "bp6": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
+      "bp7": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
+      "bp8": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
+      "bp9": {speed: 0, speedMult: 0, dutyCycle: 0, methanol: 0},
     };
 
     var numOutputs = 4;
 
-    function updateSpeed(breakpoint){
-      let value = Number(document.getElementById("sp"+breakpoint).value);
+    /////////// MAP UPDATE FUNCS ////////////
+    function updateSpeed(bp){
+      let value = Number(document.getElementById("sp"+bp).value);
       if (!Number.isInteger(Number(value))) {
         alert("Must be integer")
         return;
       }
       //TODO: add check for less than 100
       //TODO: add check for 0 or greater
-      dataPoints["breakpoint"+breakpoint].speed = value
+      demandMapCli["bp"+bp].speed = value
     }
 
-    function updateSpeedMult(breakpoint){
-      let value = Number(document.getElementById("spm"+breakpoint).value);
+    function updateSpeedMult(bp){
+      let value = Number(document.getElementById("spm"+bp).value);
       if (!Number.isInteger(Number(value))) {
         alert("Must be integer")
         return;
       }
       //TODO: add check for less than 100
       //TODO: add check for 0 or greater
-      dataPoints["breakpoint"+breakpoint].speedMultiplier = value
+      demandMapCli["bp"+bp].speedMult = value
     }
 
-    function updateDuty(breakpoint){
-      let value = Number(document.getElementById("dc"+breakpoint).value);
+    function updateDuty(bp){
+      let value = Number(document.getElementById("dc"+bp).value);
       if (!Number.isInteger(Number(value))) {
         alert("Must be integer")
         return;
       }
       //TODO: add check for less than 100
       //TODO: add check for 0 or greater
-      dataPoints["breakpoint"+breakpoint].dutyCycle = value
+      demandMapCli["bp"+bp].dutyCycle = value
     }
 
-    function updateMethanol(breakpoint){
-      let value = Number(document.getElementById("dp"+breakpoint).value);
+    function updateMethanol(bp){
+      let value = Number(document.getElementById("mo"+bp).value);
       if (!Number.isInteger(Number(value))) {
         alert("Must be integer")
         return;
       }
       //TODO: add check for less than 100
       //TODO: add check for 0 or greater
-      dataPoints["breakpoint"+breakpoint].methanol = value
+      demandMapCli["bp"+bp].methanol = value
     }
 
     function submitData() {
-      console.log("User data to be sent to server: ", dataPoints);
+      console.log("User data to be sent to server: ", demandMapCli);
 
       let xhr = new XMLHttpRequest();
       xhr.open("POST", "/updateDemands", true);
@@ -248,8 +249,9 @@
         alert("Request failed.");
       };
 
-      xhr.send(JSON.stringify(dataPoints));
+      xhr.send(JSON.stringify(demandMapCli));
     }
+    /////////// END MAP UPDATE FUNCS ////////////
 
     window.onload = function () {
       // first request, get the state of the outputs
@@ -266,22 +268,27 @@
       };
       xhr1.send();
 
-      // second request get the state of the injection setpoints
+      // second request to get the values from the demand map
+      // use this to populate the values in the text boxes when the page loads
+      // so the user knows what the existing values are
       let xhr2 = new XMLHttpRequest();
-      xhr2.open("GET", "/getInjectionDemands", true);
+      xhr2.open("GET", "/getDemandMap", true);
 
       xhr2.onload = function () {
         if (xhr2.status == 200) {
           let demandVals = JSON.parse(xhr2.responseText);
-          console.log(demandVals)
-          let breakpoints = ["breakPoint1", "breakPoint2", "breakPoint3", "breakPoint4", "breakPoint5", "breakPoint6", "breakPoint7", "breakPoint8", "breakPoint9"]
+          let counter = 1;
+          //console.log(demandVals)
+          Object.keys(demandVals).forEach((key)=> {
+            // update our local copy of the demand map
+            demandMapCli[key] = demandVals[key]
 
-          breakpoints.forEach((key) => {
-            let input = document.getElementById(key);
-            if (input && demandVals.hasOwnProperty(key)) {
-              input.placeholder = `Current ${demandVals[key]}`;
-              injectionDemands[key] = demandVals[key];
-            }
+            // update the values in the input boxes
+            document.getElementById("sp" + (counter)).placeholder = `${demandMapCli[key].speed}`
+            document.getElementById("spm" + (counter)).placeholder = `${demandMapCli[key].speedMult}`
+            document.getElementById("dc" + (counter)).placeholder = `${demandMapCli[key].dutyCycle}`
+            document.getElementById("mo" + (counter)).placeholder = `${demandMapCli[key].methanol}`
+            counter++;
           });
         } else {
               console.log("Failed to load data")
@@ -309,4 +316,5 @@
 </body>
 
 </html>
+
 
