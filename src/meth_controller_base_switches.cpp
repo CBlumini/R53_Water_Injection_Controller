@@ -17,6 +17,7 @@
 // #define USE_INTRANET
 // #define USE_AP
 #define SIMULATOR
+// #define USE_PREFENCES
 
 // once  you are read to go live these settings are what you client will connect to
 #define AP_SSID "Water Inject"
@@ -475,6 +476,7 @@ void setup()
 
 
   // Load the values stored in preferences into the demand map
+  #ifdef USE_PREFERENCES
   preferences.begin("my-app", false);
   for (int i = 1; i <= 9; i++)
   {
@@ -491,11 +493,14 @@ void setup()
     String dutyKey = "duty" + baseKey;
     String methanolKey = "methanol" + baseKey;
 
-    demandMap[baseKeyStd].speed = preferences.getInt(speedKey.c_str(), 0.0);
-    demandMap[baseKeyStd].speedMult = preferences.getInt(speedMultKey.c_str(), 0.0);
-    demandMap[baseKeyStd].dutyCycle = preferences.getInt(dutyKey.c_str(), 0.0);
-    demandMap[baseKeyStd].methanol = preferences.getInt(methanolKey.c_str(), 0.0);
+    demandMap[baseKeyStd].speed = preferences.getInt(speedKey.c_str(), 0);
+    demandMap[baseKeyStd].speedMult = preferences.getInt(speedMultKey.c_str(), 0);
+    demandMap[baseKeyStd].dutyCycle = preferences.getInt(dutyKey.c_str(), 0);
+    demandMap[baseKeyStd].methanol = preferences.getInt(methanolKey.c_str(), 0);
   }
+  preferences.end();
+  #endif
+
 
 
   ///////////////SETUP ROUTES////////////
