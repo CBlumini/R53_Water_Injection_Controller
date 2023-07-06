@@ -12,19 +12,18 @@
 #include <typeinfo>
 #include <iostream>
 #include <webpage.h>
-// #include <PreferencesManager.h>
 
 // Set how you want to connect
 // #define USE_INTRANET
 // #define USE_AP
-#define SIMULATOR
+#define USE_SIMULATOR
+
+// only works on hardware
 #define USE_PREFENCES
 
 // once  you are read to go live these settings are what you client will connect to
 #define AP_SSID "Water Inject"
 #define AP_PASS NULL
-
-// #define NORMALLY_OPEN true
 
 // Networking Setup
 IPAddress PageIP(192, 168, 1, 1);
@@ -35,6 +34,13 @@ IPAddress ip;
 IPAddress actualIP;
 
 AsyncWebServer server(80);
+
+Preferences preferences;
+
+int speedArr[9];
+int speedMultArr[9];
+int dutyArr[9];
+int injectAmountArr[9];
 
 int actuatorOutputs[] = {LEDPIN, VALVEPIN, PUMPRELAYPIN, SPAREOUTPUTPIN};
 
@@ -54,6 +60,8 @@ unsigned long currentTime = 0;
 unsigned long prevTime = 0;
 int outState = LOW;
 
+// Sets the shape of data that will be stored in our control map (referred to as "demand map")
+//TODO: Update speedMult to float
 struct SpeedDemandStruct {
   int speed;
   int speedMult;
@@ -61,6 +69,9 @@ struct SpeedDemandStruct {
   int methanol;
 };
 
+
+// Store all the info needed to control the outputs in a data structure that can be referenced quickly
+// TODO: Can this just be a "String" rather than std::str?
 std::map<std::string, SpeedDemandStruct> demandMap = {
   {"bp1", {3000, 1, 100, 0}},
   {"bp2", {3500, 1, 100, 0}},
@@ -72,14 +83,6 @@ std::map<std::string, SpeedDemandStruct> demandMap = {
   {"bp8", {6500, 1, 100, 0}},
   {"bp9", {7000, 1, 100, 0}}
 };
-
-
-///////////////////////// WEB PAGE CODE ///////////////////
-#pragma region
-// const char index_html[] WEBPAGE;
-
-#pragma endregion
-//////////////////////// END WEB CODE /////////////////////
 
 
 ////////////////// SUPPORT FUNCTIONS AND CLASS DECLARATIONS///////////
@@ -100,11 +103,9 @@ void printMap(const std::map<std::string, SpeedDemandStruct>& demandMap) {
 
 //////////////// END SUPPORT FUNCTIONS //////////////////
 
-Preferences preferences;
 void setup()
 {
 //////////////////////// WIFI SETUP //////////////////
-#pragma region
 #ifdef USE_INTRANET
   WiFi.begin(LOCAL_SSID, LOCAL_PASS);
   while (WiFi.status() != WL_CONNECTED)
@@ -116,8 +117,6 @@ void setup()
   Serial.println(WiFi.localIP());
   actualIP = WiFi.localIP();
 #endif
-
-  // if you don't have #define USE_INTRANET, use AP Mode
 #ifdef USE_AP
   WiFi.softAP(AP_SSID, AP_PASS);
   delay(100);
@@ -127,7 +126,6 @@ void setup()
   Serial.print("IP address: ");
   Serial.println(actualIP);
 #endif
-
 #ifdef SIMULATOR
   WiFi.begin("Wokwi-GUEST", "", 6);
   while (WiFi.status() != WL_CONNECTED)
@@ -138,7 +136,6 @@ void setup()
   Serial.println(" Connected!");
 #endif
   ////////////// END WIFI SETUP//////////
-#pragma endregion
 
   ///////////////// MAIN CODE ///////////////////
 
@@ -324,6 +321,8 @@ void loop()
 #pragma region
 #ifdef USE_INTRANET
   // get stuff about the injectors
+  float carVoltageRaw = analogRead(VOLTAGESENSORPIN);
+  float carVoltage = (carVoltageRaw/1240.90) * 10; 
   long onTime = pulseIn(INJECTORDUTYPIN, HIGH);
   long offTime = pulseIn(INJECTORDUTYPIN, LOW);
   long period = onTime+offTime;
@@ -333,6 +332,8 @@ void loop()
 #endif
 #ifdef USE_AP
   // get stuff about the injectors
+  float carVoltageRaw = analogRead(VOLTAGESENSORPIN);
+  float carVoltage = (carVoltageRaw/1240.90) * 10;
   long onTime = pulseIn(INJECTORDUTYPIN, HIGH);
   long offTime = pulseIn(INJECTORDUTYPIN, LOW);
   long period = onTime+offTime;
@@ -340,7 +341,7 @@ void loop()
   int rpms = freq*2*60; // two revs per pulse then seconds to mins
   int duty = (onTime/period)*100;
 #endif
-#ifdef SIMULATOR
+#ifdef USE_SIMULATOR
   // 3.3v and 4096 counts... 4095/3.3
   float carVoltageRaw = analogRead(VOLTAGESENSORPIN);
   float carVoltage = (carVoltageRaw/1240.90) * 10; // assume 10x divider
@@ -375,8 +376,14 @@ void loop()
     Serial.print("injecting");
     digitalWrite(PUMPRELAYPIN, HIGH);
 
-    // get RPM scaling
-    // float rpmScalar = interpolateValues(rpms, , 0, 1);
+    // // get RPM scaling
+    // float rpmScalar;
+    // rpmScalar = interpolateValues(rpms, speedArr, speedMultArr, 9);
+    // rpmScalar = rpmScalar/100;
+    // float methScalar;
+    // methScalar = interpolateValues(duty, dutyArr, injectAmountArr, 9);
+    
+    // float finalOutput = rpmScalar * methScalar;
 
   } else{
     // do nothing 
