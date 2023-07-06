@@ -376,6 +376,7 @@ void loop()
     digitalWrite(PUMPRELAYPIN, HIGH);
 
     // get RPM scaling
+    // float rpmScalar = interpolateValues(rpms, , 0, 1);
 
   } else{
     // do nothing 
