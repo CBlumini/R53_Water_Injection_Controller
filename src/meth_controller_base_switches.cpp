@@ -297,7 +297,7 @@ server.on("/updateDemands", HTTP_POST, [](AsyncWebServerRequest *request) {}, NU
 
     }
     preferences.end();
-
+  request->send(200, "application/json", "{\"message\": \"Data received and saved successfully.\"}");
   });
 
   // might make sense to do this
