@@ -8,6 +8,6 @@ void setupBuiltInLED(int freq, int ledChannel, int resolution, int ledPin);
 void ledOutput(int dutyCycle);
 void cycleOutput(int cycleTime, int output, bool outputToggle);
 void setFlags(int relayId, int relayState);
-int interpolateValues(int val, int* xMapVals, int* yMapVals, uint8_t size);
+float interpolateValues(int val, int* xMapVals, int* yMapVals, uint8_t size);
 
 #endif // MY_FUNCTIONS_H
