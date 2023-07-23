@@ -300,17 +300,7 @@ server.on("/updateDemands", HTTP_POST, [](AsyncWebServerRequest *request) {}, NU
   request->send(200, "application/json", "{\"message\": \"Data received and saved successfully.\"}");
   });
 
-  // might make sense to do this
-  // 1 validate numbers
-  // 2 save to prefs
-  // 3 trigger a fucntion that loads preferences
-  // 4 reuse that same function to load the prefs on startup
-  // Note: don't seriously need a function to write because that should only ever be modified due to this post request
-
- // some test
-// Start server
 server.begin();
-
 };
 ////////////// END MAIN SETUP CODE /////////////////
 
